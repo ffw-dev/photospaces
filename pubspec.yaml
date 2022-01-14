@@ -1,0 +1,31 @@
+name: ffw_photospaces
+description: A new Flutter project.
+
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.15.0 <3.0.0"
+
+dependencies:
+  dev_eza_api:
+    git:
+      url: https://github.com/ffw-dev/dev-eza-api.git
+      ref: main
+  async_redux: 13.2.2
+  flutter_secure_storage: 5.0.0-beta.5
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^1.0.0
+flutter:
+  uses-material-design: true
