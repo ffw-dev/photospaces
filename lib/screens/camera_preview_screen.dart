@@ -111,10 +111,13 @@ class _CameraPreviewScreenState extends State<CameraPreviewScreen> {
       children: <Widget>[
         ...currentPhotos
             .map(
-              (e) => Container(
-                padding: const EdgeInsets.all(8),
-                child: Image.file(File(e.path)),
-                color: Colors.teal[600],
+              (e) => GestureDetector(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoPreviewScreen(e))),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.file(File(e.path)),
+                  color: Colors.teal[600],
+                ),
               ),
             )
             .toList()
