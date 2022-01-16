@@ -1,4 +1,4 @@
-import 'package:ffw_photospaces/screens/camera_preview_screen.dart';
+import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -13,7 +13,7 @@ class MockHomeScreen extends StatelessWidget {
         child: Center(
             child: IconButton(
           onPressed: () async {
-            Navigator.push(context, MaterialPageRoute(builder: (_) => CameraPreviewScreen()));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => CameraScreen()));
           },
           icon: Icon(Icons.camera, color: Colors.red,),
         )),

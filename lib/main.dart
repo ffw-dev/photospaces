@@ -1,7 +1,7 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:dev_eza_api/main.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
-import 'package:ffw_photospaces/screens/camera_preview_screen.dart';
+import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:ffw_photospaces/screens/login_screen.dart';
 import 'package:ffw_photospaces/screens/mock_home_screen.dart';
 import 'package:ffw_photospaces/services/authentication_service.dart';
@@ -48,7 +48,7 @@ class _MainActivityState extends State<MainActivity> {
           routes: {
             '/': (_) => tryCookieLoginAndBuildInitialRoute(),
             '/mockHomeScreen': (_) => const MockHomeScreen(),
-            '/cameraPreviewScreen': (_) => const CameraPreviewScreen(),
+            '/cameraPreviewScreen': (_) => const CameraScreen(),
           },
         ));
   }
