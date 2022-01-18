@@ -16,7 +16,7 @@ class PhotosPreviewScreen extends StatefulWidget {
 }
 
 class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
-  final List<XFile> _selectedPhotos = [];
+  List<XFile> _selectedPhotos = [];
 
   bool isSelectMode = false;
 
@@ -26,75 +26,120 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(),
-        body: GridView.count(
-          primary: false,
-          crossAxisCount: 4,
-          mainAxisSpacing: 2,
-          crossAxisSpacing: 2,
-          children: <Widget>[
-            ...widget._photos
-                .map(
-                  (photo) => GestureDetector(
-                    onTap: () => togglePhotoSelect(photo),
-                    onDoubleTap: () =>
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoPreviewScreen(photo))),
-                    onLongPress: () => setState(() {
-                      isSelectMode = true;
-                      _selectedPhotos.add(photo);
-                    }),
-                    child: Stack(children: [
-                      Positioned(
-                           child: SizedBox(width: 100, height: 100,child: FittedBox( fit: BoxFit.fill,child: Image.file(File(photo.path))))),
-                      if (isSelectMode)
-                        _selectedPhotos.contains(photo)
-                            ? const Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
-                                ))
-                            : const Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Icon(
-                                  Icons.radio_button_unchecked,
-                                  color: Colors.white,
-                                ))
-                    ]),
-                  ),
-                )
-                .toList(),
-            Align(
-              alignment: Alignment.bottomCenter,
+        body: Column(children: [
+          Expanded(
+            child: GridView.count(
+              primary: false,
+              crossAxisCount: 4,
+              mainAxisSpacing: 2,
+              crossAxisSpacing: 2,
+              children: <Widget>[
+                ...widget._photos
+                    .map(
+                      (photo) => GestureDetector(
+                        onTap: () => togglePhotoSelect(photo),
+                        onDoubleTap: () =>
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoPreviewScreen(photo))),
+                        onLongPress: () => setState(() {
+                          isSelectMode = true;
+                          _selectedPhotos.add(photo);
+                        }),
+                        child: Stack(children: [
+                          Positioned(
+                              child: SizedBox(
+                                  width: 100,
+                                  height: 100,
+                                  child: FittedBox(fit: BoxFit.fill, child: Image.file(File(photo.path))))),
+                          if (isSelectMode)
+                            _selectedPhotos.contains(photo)
+                                ? const Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Icon(
+                                      Icons.check_circle,
+                                      color: Colors.white,
+                                    ))
+                                : const Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Icon(
+                                      Icons.radio_button_unchecked,
+                                      color: Colors.white,
+                                    ))
+                        ]),
+                      ),
+                    )
+                    .toList(),
+              ],
+            ),
+          ),
+            if (isSelectMode)
+              Padding(
+              padding: const EdgeInsets.all(24),
               child: GestureDetector(
-                child: const Icon(
-                  Icons.save,
-                  color: Colors.red,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text(
+                        'Upload ${_selectedPhotos.length} photos',
+                        style: const TextStyle(
+                          fontSize: 18,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.save,
+                      size: 24,
+                      color: Colors.red,
+                    )
+                  ],
                 ),
                 onTap: () async {
+                  if (_selectedPhotos.isEmpty) {
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('Enable selection mode by tapping and holding a photo')));
+                    return;
+                  }
+
                   successFullUploadsCount = 0;
                   ScaffoldMessenger.of(context).showSnackBar(uploadingSnackBar());
-                  for (var file in _selectedPhotos) {
-                    await DevEzaApi.ezFileEndpoints
-                        .uploadPost(FormData.fromMap({
-                      "assetId": "c37744ff-938d-4614-a29e-a386d1db3d63",
-                      "Type": "3",
-                      "File": await MultipartFile.fromFile(file.path)
-                    }))
-                        .then((value) {
-                      print(value);
-                      setState(() {
-                        successFullUploadsCount++;
-                      });
-                    }).catchError((e) => print(e));
-                  }
+                  await uploadPhotos();
                   ScaffoldMessenger.of(context).showSnackBar(successfulUploadSnackBar());
                 },
               ),
+            ),
+          if (!isSelectMode)
+            TextButton(
+                onPressed: () async {
+                  _selectedPhotos = widget._photos;
+                  await uploadPhotos();
+                },
+                child: const Padding(
+                  padding: EdgeInsets.all(24.0),
+                  child: Text('Upload all', style: TextStyle(fontSize: 18),),
+                )
             )
-          ],
-        ));
+
+        ]));
+  }
+
+  Future<void> uploadPhotos() async {
+    for (var file in _selectedPhotos) {
+      await DevEzaApi.ezFileEndpoints
+          .uploadPost(FormData.fromMap({
+        "assetId": "c37744ff-938d-4614-a29e-a386d1db3d63",
+        "Type": "3",
+        "File": await MultipartFile.fromFile(file.path)
+      }))
+          .then((value) {
+        print(value);
+        setState(() {
+          successFullUploadsCount++;
+        });
+      }).catchError((e) => print(e));
+    }
   }
 
   void togglePhotoSelect(XFile photo) => isSelectMode
