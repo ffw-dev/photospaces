@@ -209,7 +209,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: c87ccc52fb1d76dbd260508aced3625c18394989
+      resolved-ref: fa305dddeb7eada2bd29a5105377849a72a5a3d7
       url: "https://github.com/ffw-dev/dev-eza-api.git"
     source: git
     version: "0.0.1"
@@ -701,7 +701,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.3"
+    version: "2.3.6"
   xdg_directories:
     dependency: transitive
     description:

@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:ffw_photospaces/screens/photos_preview_screen.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -17,30 +16,15 @@ class _CameraScreenState extends State<CameraScreen> {
   bool isCamerasReady = false;
   bool isPhotoTaken = false;
   bool isFinishedTakingPictures = false;
+  CameraType currentCamera = CameraType.back;
 
-  late final CameraController _cameraController;
+  late CameraController? _cameraController = null;
   List<XFile> currentPhotos = [];
 
   @override
   void initState() {
-    availableCameras().then((value) {
-      _cameraController = CameraController(value[0], ResolutionPreset.max);
-      _cameraController.initialize().then((_) {
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          isCamerasReady = true;
-        });
-      });
-    });
+    init(currentCamera);
     super.initState();
-  }
-
-  @override
-  void dispose() {
-    _cameraController.dispose();
-    super.dispose();
   }
 
   @override
@@ -55,9 +39,39 @@ class _CameraScreenState extends State<CameraScreen> {
     if (state == AppLifecycleState.inactive) {
       cameraController.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      isCamerasReady = false;
-      _cameraController.initialize().then((value) => isCamerasReady = true);
+      init(currentCamera);
     }
+  }
+
+  void init(CameraType camera) async {
+    if(_cameraController != null) {
+      await _cameraController!.dispose();
+    }
+
+    setState(() {
+      isCamerasReady = false;
+      isFinishedTakingPictures = false;
+      isPhotoTaken = false;
+    });
+
+    availableCameras().then((value) {
+      currentCamera = camera;
+      _cameraController = CameraController(camera == CameraType.front ? value[0] : value[1], ResolutionPreset.max);
+      _cameraController!.initialize().then((_) {
+        if (!mounted) {
+          return;
+        }
+        setState(() {
+          isCamerasReady = true;
+        });
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _cameraController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -87,10 +101,10 @@ class _CameraScreenState extends State<CameraScreen> {
     return Container(
       decoration: const BoxDecoration(color: Colors.red),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
-        textBaseline: TextBaseline.alphabetic,
-        children: [buildTakePictureButton(context), if (currentPhotos.isNotEmpty) buildLastPhotoIndicator(context)],
+        textBaseline: TextBaseline.ideographic,
+        children: [ if (currentPhotos.isNotEmpty) buildLastPhotoIndicator(context), buildTakePictureButton(context), buildSwitchCameraButton(context)],
       ),
     );
   }
@@ -98,11 +112,14 @@ class _CameraScreenState extends State<CameraScreen> {
   GestureDetector buildLastPhotoIndicator(BuildContext context) {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos))),
-      child: SizedBox(
-          width: 60,
-          height: 60,
-          child: FittedBox(
-              alignment: Alignment.center, fit: BoxFit.fill, child: Image.file(File(currentPhotos.last.path)))),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 8.0),
+        child: SizedBox(
+            width: 60,
+            height: 60,
+            child: FittedBox(
+                alignment: Alignment.center, fit: BoxFit.fill, child: Image.file(File(currentPhotos.last.path)))),
+      ),
     );
   }
 
@@ -115,16 +132,16 @@ class _CameraScreenState extends State<CameraScreen> {
           constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7, minWidth: MediaQuery.of(context).size.width),
           child: AspectRatio(
-              aspectRatio: 1 / _cameraController.value.aspectRatio, child: CameraPreview(_cameraController)),
+              aspectRatio: 1 / _cameraController!.value.aspectRatio, child: CameraPreview(_cameraController!)),
         ),
       ),
     );
   }
 
-  void zoomHandler(details) async => await _cameraController.getMaxZoomLevel() <= details.scale
+  void zoomHandler(details) async => await _cameraController!.getMaxZoomLevel() <= details.scale
           ? null
-          : await _cameraController.setZoomLevel(details.scale
-              .clamp(await _cameraController.getMinZoomLevel(), await _cameraController.getMaxZoomLevel()));
+          : await _cameraController!.setZoomLevel(details.scale
+              .clamp(await _cameraController!.getMinZoomLevel(), await _cameraController!.getMaxZoomLevel()));
 
   IconButton buildFinishedTakingPhotosIcon(BuildContext context) {
     return IconButton(
@@ -135,15 +152,35 @@ class _CameraScreenState extends State<CameraScreen> {
 
   IconButton buildTakePictureButton(BuildContext context) {
     return IconButton(
+      padding: EdgeInsets.all(0.0),
       icon: const Icon(Icons.camera, size: 46, color: Colors.white),
+      onPressed: () => handleTakeAPicture(context),
+    );
+  }
+
+  void handleTakeAPicture(BuildContext context) {
+    _cameraController!.takePicture().then((value) {
+      setState(() {
+        currentPhotos.add(value);
+      });
+    });
+  }
+
+  IconButton buildSwitchCameraButton(BuildContext context) {
+    return IconButton(
+      padding: EdgeInsets.all(0.0),
+      icon: const Icon(Icons.cameraswitch, size: 32, color: Colors.white),
       onPressed: () {
-        _cameraController.takePicture().then((value) {
-          setState(() {
-            currentPhotos.add(value);
-            Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoPreviewScreen(value)));
-          });
+        setState(() {
+          isCamerasReady = false;
+          currentCamera == CameraType.front ? init(CameraType.back) : init(CameraType.front);
         });
       },
     );
   }
+}
+
+enum CameraType {
+  front,
+  back
 }

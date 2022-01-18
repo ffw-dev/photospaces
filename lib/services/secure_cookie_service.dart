@@ -22,7 +22,6 @@ class SecureCookieService {
 
       return response.body.results[0];
     } catch (_) {
-      print(_);
       return null;
     }
   }
