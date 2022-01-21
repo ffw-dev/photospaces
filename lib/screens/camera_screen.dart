@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:ffw_photospaces/screens/photos_preview_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -44,7 +43,7 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void init(CameraType camera) async {
-    if(_cameraController != null) {
+    if (_cameraController != null) {
       await _cameraController!.dispose();
     }
 
@@ -56,7 +55,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
     availableCameras().then((value) {
       currentCamera = camera;
-      _cameraController = CameraController(camera == CameraType.front ? value[0] : value[1], ResolutionPreset.max);
+      _cameraController = CameraController(camera == CameraType.front ? value[1] : value[0], ResolutionPreset.max);
       _cameraController!.initialize().then((_) {
         if (!mounted) {
           return;
@@ -100,11 +99,13 @@ class _CameraScreenState extends State<CameraScreen> {
   Container buildCameraControlRow(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(color: Colors.red),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        textBaseline: TextBaseline.ideographic,
-        children: [ if (currentPhotos.isNotEmpty) buildLastPhotoIndicator(context), buildTakePictureButton(context), buildSwitchCameraButton(context)],
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          if (currentPhotos.isNotEmpty) Align(alignment: Alignment.centerLeft, child: buildLastPhotoIndicator(context)),
+          Align(alignment: Alignment.center, child: buildTakePictureButton(context)),
+          Align(alignment: Alignment.centerRight, child: buildConfirmPhotosButton(context))
+        ],
       ),
     );
   }
@@ -113,10 +114,10 @@ class _CameraScreenState extends State<CameraScreen> {
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos))),
       child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: SizedBox(
-            width: 60,
-            height: 60,
+            width: 70,
+            height: 70,
             child: FittedBox(
                 alignment: Alignment.center, fit: BoxFit.fill, child: Image.file(File(currentPhotos.last.path)))),
       ),
@@ -139,23 +140,52 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void zoomHandler(details) async => await _cameraController!.getMaxZoomLevel() <= details.scale
-          ? null
-          : await _cameraController!.setZoomLevel(details.scale
-              .clamp(await _cameraController!.getMinZoomLevel(), await _cameraController!.getMaxZoomLevel()));
+      ? null
+      : await _cameraController!.setZoomLevel(
+          details.scale.clamp(await _cameraController!.getMinZoomLevel(), await _cameraController!.getMaxZoomLevel()));
 
   IconButton buildFinishedTakingPhotosIcon(BuildContext context) {
     return IconButton(
-      icon: const Icon(Icons.add_task, size: 46, color: Colors.white),
+      icon: const Icon(Icons.add_task, size: 64, color: Colors.white),
       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos))),
     );
   }
 
-  IconButton buildTakePictureButton(BuildContext context) {
-    return IconButton(
-      padding: EdgeInsets.all(0.0),
-      icon: const Icon(Icons.camera, size: 46, color: Colors.white),
-      onPressed: () => handleTakeAPicture(context),
+  GestureDetector buildTakePictureButton(BuildContext context) {
+    return GestureDetector(
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 70,
+            height: 70,
+            child: Container(
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white
+              ),
+            ),
+          ),
+          SizedBox(
+            width: 61,
+            height: 61,
+            child: Container(
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(
+                  color: Colors.red,
+                  width: 2.0,
+                )
+              ),
+            ),
+          )
+        ],
+      ),
+      onTap: () => handleTakeAPicture(context),
     );
+
+    //const Icon(Icons.camera, size: 46, color: Colors.white)
   }
 
   void handleTakeAPicture(BuildContext context) {
@@ -168,7 +198,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   IconButton buildSwitchCameraButton(BuildContext context) {
     return IconButton(
-      padding: EdgeInsets.all(0.0),
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
       icon: const Icon(Icons.cameraswitch, size: 32, color: Colors.white),
       onPressed: () {
         setState(() {
@@ -178,9 +208,20 @@ class _CameraScreenState extends State<CameraScreen> {
       },
     );
   }
+
+  IconButton buildConfirmPhotosButton(BuildContext context) {
+    return IconButton(
+      padding: const EdgeInsets.symmetric(horizontal: 34.0),
+      icon: const Icon(Icons.check_circle, size: 48, color: Colors.white),
+      onPressed: () {
+        setState(() {
+          currentPhotos.isEmpty
+              ? Navigator.of(context).pop()
+              : Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)));
+        });
+      },
+    );
+  }
 }
 
-enum CameraType {
-  front,
-  back
-}
+enum CameraType { front, back }
