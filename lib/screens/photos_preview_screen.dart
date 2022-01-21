@@ -7,7 +7,7 @@ import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:flutter/material.dart';
 
 class PhotosPreviewScreen extends StatefulWidget {
-  final List<XFile> _photos;
+  List<XFile> _photos;
 
   PhotosPreviewScreen(this._photos, {Key? key}) : super(key: key);
 
@@ -17,19 +17,24 @@ class PhotosPreviewScreen extends StatefulWidget {
 
 class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   List<XFile> _selectedPhotos = [];
-
-  bool isSelectMode = false;
-
+  bool isSelectMode = true;
   var successFullUploadsCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedPhotos = List<XFile>.from(widget._photos);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(),
+        appBar: buildAppBar(context),
         body: Column(children: [
           if (isSelectMode) buildCancelSelectionModeButton(),
           Expanded(
             child: GridView.count(
+              padding: const EdgeInsets.all(2),
               primary: false,
               crossAxisCount: 4,
               mainAxisSpacing: 2,
@@ -39,11 +44,12 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
                     .map(
                       (photo) => GestureDetector(
                         onTap: () => togglePhotoSelect(photo),
-                        onDoubleTap: () =>
-                            Navigator.push(context, MaterialPageRoute(builder: (_) => PhotoPreviewScreen(photo))),
+                        onDoubleTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => PhotoPreviewScreen(widget._photos, widget._photos.indexOf(photo)))),
                         onLongPress: () => setState(() {
                           isSelectMode = true;
-                          _selectedPhotos = [];
                           if (_selectedPhotos.contains(photo)) {
                             return;
                           }
@@ -78,7 +84,6 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
               ],
             ),
           ),
-          if (isSelectMode && _selectedPhotos.isNotEmpty) buildUploadNumberOfPhotosButton(context),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -91,6 +96,32 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             ),
           )
         ]));
+  }
+
+  AppBar buildAppBar(BuildContext context) {
+    return AppBar(
+      actions: [
+        IconButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(Icons.cancel)),
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.3,
+        ),
+        IconButton(
+            onPressed: () async {
+              if (_selectedPhotos.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No photos selected')));
+                return;
+              }
+
+              successFullUploadsCount = 0;
+              await handleUploadAndShowSnackBars(context);
+            },
+            icon: const Icon(Icons.check_circle)),
+      ],
+    );
   }
 
   TextButton buildUnselectAllButton() {
@@ -113,7 +144,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
     return TextButton(
         onPressed: () async {
           setState(() {
-            _selectedPhotos = List.from(widget._photos);
+            _selectedPhotos = List<XFile>.from(widget._photos);
             isSelectMode = true;
           });
         },
@@ -129,7 +160,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   TextButton buildUploadAllButton(BuildContext context) {
     return TextButton(
         onPressed: () async {
-          _selectedPhotos = widget._photos;
+          _selectedPhotos = List<XFile>.from(widget._photos);
           await handleUploadAndShowSnackBars(context);
         },
         child: const Padding(
@@ -176,8 +207,9 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
 
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
     ScaffoldMessenger.of(context).showSnackBar(showSnackBarWithText('Uploading, please wait'));
-    await uploadPhotos();
-    ScaffoldMessenger.of(context).showSnackBar(showSnackBarWithText('Successfully uploaded $successFullUploadsCount of ${_selectedPhotos.length} pictures.'));
+    await uploadPhotos().onError((error, stackTrace) => showSnackBarWithText('there was an error uploading photos: $error'));
+    ScaffoldMessenger.of(context).showSnackBar(
+        showSnackBarWithText('Successfully uploaded $successFullUploadsCount of ${_selectedPhotos.length} pictures.'));
   }
 
   TextButton buildCancelSelectionModeButton() {
@@ -185,7 +217,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
         onPressed: () async {
           setState(() {
             _selectedPhotos = [];
-            _selectedPhotos = widget._photos;
+            _selectedPhotos = List<XFile>.from(widget._photos);
             isSelectMode = false;
           });
         },

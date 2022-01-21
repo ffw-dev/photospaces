@@ -1,0 +1,5 @@
+screens:
+  photos_preview:
+    cancel_selection_mode: cancel selection mode
+  photo_preview:
+    max_char_exceeded: You exceeded maximum characeter limit
