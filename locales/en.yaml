@@ -1,0 +1,19 @@
+screens:
+  login_screen:
+    email: Email
+    password: Password
+    login: Login
+  camera_screen:
+    loading_camera: Loading camera
+  photos_preview_screen:
+    cancel_selection_mode: cancel selection mode
+    uploading: Uploading, please wait
+    no_photo_selected: No photos selected
+    upload_all: Upload all
+    select_all: Select all
+    unselect_all: Unselect all
+  photo_preview_screen:
+    add_description: Add description
+    description: description
+    add: add
+    max_char_exceeded: You exceeded maximum characeter limit

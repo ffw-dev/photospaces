@@ -75,7 +75,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(), body: !isCamerasReady ? buildLoadingText() : buildCameraPreview(context));
+    return Scaffold(appBar: AppBar(actions: [buildSwitchCameraButton(context)],), body: !isCamerasReady ? buildLoadingText() : buildCameraPreview(context));
   }
 
   Center buildLoadingText() {
@@ -98,7 +98,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Container buildCameraControlRow(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: Colors.red),
+      decoration: BoxDecoration(color: Theme.of(context).primaryColor),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -126,9 +126,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   GestureDetector buildCameraView(BuildContext context) {
     return GestureDetector(
-      onVerticalDragDown: (_) => Navigator.pop(context),
       child: InteractiveViewer(
-        onInteractionEnd: zoomHandler,
         child: ConstrainedBox(
           constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.7, minWidth: MediaQuery.of(context).size.width),
@@ -174,7 +172,7 @@ class _CameraScreenState extends State<CameraScreen> {
                   shape: BoxShape.circle,
                 color: Colors.white,
                 border: Border.all(
-                  color: Colors.red,
+                  color: Theme.of(context).primaryColor,
                   width: 2.0,
                 )
               ),
@@ -189,6 +187,14 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void handleTakeAPicture(BuildContext context) {
+    if(_cameraController == null) {
+      return;
+    }
+
+    if(_cameraController!.value.isTakingPicture) {
+      return;
+    }
+
     _cameraController!.takePicture().then((value) {
       setState(() {
         currentPhotos.add(value);

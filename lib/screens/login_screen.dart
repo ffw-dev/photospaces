@@ -1,3 +1,4 @@
+import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/services/authentication_service.dart';
 import 'package:flutter/material.dart';
 
@@ -14,41 +15,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
         body: Center(
-          child: SizedBox(
-            width: double.infinity,
-            height: 400,
-            child: Padding(
-              padding: const EdgeInsets.all(46.0),
-              child: Form(
-                child: Column(
-                  children: <Widget>[
-                    TextFormField(
-                      controller: emailInputController,
-                      decoration: const InputDecoration(
-                          labelText: 'Email',
-                          icon: Icon(Icons.account_circle_rounded)),
-                    ),
-                    TextFormField(
-                      controller: passwordInputController,
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                          labelText: 'Password', icon: Icon(Icons.lock)),
-                    ),
-                    const Spacer(),
-                    ElevatedButton(
-                        onPressed: () {
-                          AuthenticationService().login(emailInputController.text, passwordInputController.text).then((value) => value == true ? Navigator.pushNamed(context, '/mockHomeScreen') : null);
-                        },
-                        child: const Text('Log in')
-                    )
-                  ],
+      child: SizedBox(
+        width: double.infinity,
+        height: 400,
+        child: Padding(
+          padding: const EdgeInsets.all(46.0),
+          child: Form(
+            child: Column(
+              children: <Widget>[
+                TextFormField(
+                  controller: emailInputController,
+                  decoration: InputDecoration(
+                      labelText: currentLocalesService.login_screen['email'],
+                      icon: const Icon(Icons.account_circle_rounded)),
                 ),
-              ),
+                TextFormField(
+                  controller: passwordInputController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                      labelText: currentLocalesService.login_screen['password'], icon: const Icon(Icons.lock)),
+                ),
+                const Spacer(),
+                ElevatedButton(
+                    onPressed: () {
+                      AuthenticationService()
+                          .login(emailInputController.text, passwordInputController.text)
+                          .then((value) => value == true ? Navigator.pushNamed(context, '/mockHomeScreen') : null);
+                    },
+                    child: Text(currentLocalesService.login_screen['login']))
+              ],
             ),
           ),
-        ));
+        ),
+      ),
+    ));
   }
 }

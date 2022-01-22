@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:dev_eza_api/main.dart';
 import 'package:dio/dio.dart';
+import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -33,55 +35,57 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
         body: Column(children: [
           if (isSelectMode) buildCancelSelectionModeButton(),
           Expanded(
-            child: GridView.count(
-              padding: const EdgeInsets.all(2),
-              primary: false,
-              crossAxisCount: 4,
-              mainAxisSpacing: 2,
-              crossAxisSpacing: 2,
-              children: <Widget>[
-                ...widget._photos
-                    .map(
-                      (photo) => GestureDetector(
-                        onTap: () => togglePhotoSelect(photo),
-                        onDoubleTap: () => Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (_) => PhotoPreviewScreen(widget._photos, widget._photos.indexOf(photo)))),
-                        onLongPress: () => setState(() {
-                          isSelectMode = true;
-                          if (_selectedPhotos.contains(photo)) {
-                            return;
-                          }
-                          _selectedPhotos.add(photo);
-                        }),
-                        child: Stack(children: [
-                          Positioned(
-                              child: SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child: FittedBox(fit: BoxFit.fill, child: Image.file(File(photo.path))))),
-                          if (isSelectMode)
-                            _selectedPhotos.contains(photo)
-                                ? const Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: Icon(
-                                      Icons.check_circle,
-                                      color: Colors.white,
-                                    ))
-                                : const Positioned(
-                                    top: 0,
-                                    right: 0,
-                                    child: Icon(
-                                      Icons.radio_button_unchecked,
-                                      color: Colors.white,
-                                    ))
-                        ]),
-                      ),
-                    )
-                    .toList(),
-              ],
+            child: GridView.builder(
+              itemCount: widget._photos.length,
+              scrollDirection: Axis.vertical,
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4,
+                crossAxisSpacing: 1,
+                mainAxisSpacing: 1
+              ),
+              itemBuilder: (BuildContext context, int index) {
+                var photo = widget._photos[index];
+
+                return GridTile(
+                  child: GestureDetector(
+                    onTap: () => togglePhotoSelect(photo),
+                    onDoubleTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => PhotoPreviewScreen(widget._photos, widget._photos.indexOf(photo)))),
+                    onLongPress: () => setState(() {
+                      isSelectMode = true;
+                      if (_selectedPhotos.contains(photo)) {
+                        return;
+                      }
+                      _selectedPhotos.add(photo);
+                    }),
+                    child: Stack(children: [
+                      Positioned(
+                          child: SizedBox(
+                              width: 100,
+                              height: 100,
+                              child: FittedBox(fit: BoxFit.fill,child: Image.file(File(photo.path), cacheHeight: 1000, cacheWidth: 1000,)))),
+                      if (isSelectMode)
+                        _selectedPhotos.contains(photo)
+                            ? const Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Icon(
+                              Icons.check_circle,
+                              color: Colors.white,
+                            ))
+                            : const Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Icon(
+                              Icons.radio_button_unchecked,
+                              color: Colors.white,
+                            ))
+                    ]),
+                  ),
+                );
+              },
             ),
           ),
           Padding(
@@ -148,10 +152,10 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             isSelectMode = true;
           });
         },
-        child: const Padding(
+        child: Padding(
           padding: EdgeInsets.all(12.0),
           child: Text(
-            'Select all',
+            currentLocalesService.photos_preview_screen['select_all'],
             style: TextStyle(fontSize: 14),
           ),
         ));
@@ -163,11 +167,11 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
           _selectedPhotos = List<XFile>.from(widget._photos);
           await handleUploadAndShowSnackBars(context);
         },
-        child: const Padding(
-          padding: EdgeInsets.all(12.0),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
           child: Text(
-            'Upload all',
-            style: TextStyle(fontSize: 16),
+            currentLocalesService.photos_preview_screen['select_all'],
+            style: const TextStyle(fontSize: 16),
           ),
         ));
   }
@@ -185,16 +189,17 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
                 fontSize: 18,
               ),
             ),
-            const Icon(
+            Icon(
               Icons.save,
               size: 24,
-              color: Colors.red,
+              color: Theme.of(context).primaryColor,
             )
           ],
         ),
         onTap: () async {
           if (_selectedPhotos.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No photos selected')));
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(currentLocalesService.photos_preview_screen['no_photo_selected'])));
             return;
           }
 
@@ -206,8 +211,10 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   }
 
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
-    ScaffoldMessenger.of(context).showSnackBar(showSnackBarWithText('Uploading, please wait'));
-    await uploadPhotos().onError((error, stackTrace) => showSnackBarWithText('there was an error uploading photos: $error'));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(showSnackBarWithText(currentLocalesService.photos_preview_screen['uploading']));
+    await createAssetAndUploadPhotos()
+        .onError((error, stackTrace) => showSnackBarWithText('there was an error uploading photos: $error'));
     ScaffoldMessenger.of(context).showSnackBar(
         showSnackBarWithText('Successfully uploaded $successFullUploadsCount of ${_selectedPhotos.length} pictures.'));
   }
@@ -221,30 +228,32 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             isSelectMode = false;
           });
         },
-        child: const Padding(
-          padding: EdgeInsets.all(12.0),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
           child: Text(
-            'cancel selection mode',
-            style: TextStyle(fontSize: 14, color: Colors.red),
+            currentLocalesService.photos_preview_screen['cancel_selection_mode'],
+            style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor),
           ),
         ));
   }
 
-  Future<void> uploadPhotos() async {
+  Future<void> createAssetAndUploadPhotos() async {
     successFullUploadsCount = 0;
+
+    var newAsset = await DevEzaApi.ezAssetEndpoints
+        .setSet(FormData.fromMap({
+          "Data": json.encode({"TypeId": "1"})
+        }))
+        .then((response) => response.body.results[0]);
+    print(newAsset.identifier);
     for (var file in _selectedPhotos) {
-      await DevEzaApi.ezFileEndpoints
-          .uploadPost(FormData.fromMap({
-        "assetId": "c37744ff-938d-4614-a29e-a386d1db3d63",
-        "Type": "3",
-        "File": await MultipartFile.fromFile(file.path)
-      }))
-          .then((value) {
-        setState(() {
-          successFullUploadsCount++;
-        });
-      });
+      await DevEzaApi.ezFileEndpoints.uploadPost(FormData.fromMap(
+          {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(file.path)}));
+
+      successFullUploadsCount++;
     }
+
+    await DevEzaApi.ezLabelEndpoints.associateWithPost(FormData.fromMap({"Id": "16", "assetId": newAsset.identifier}));
   }
 
   void togglePhotoSelect(XFile photo) => isSelectMode
@@ -256,12 +265,6 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   SnackBar showSnackBarWithText(String text) {
     return SnackBar(
       content: Text(text),
-    );
-  }
-
-  SnackBar uploadingSnackBar() {
-    return const SnackBar(
-      content: Text('Uploading, please wait.'),
     );
   }
 }

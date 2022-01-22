@@ -20,13 +20,17 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.2
-  camera: ^0.9.4+5
+  cupertino_icons: 1.0.2
+  camera: 0.9.4+5
+  yaml: 3.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^1.0.0
+  flutter_lints: 1.0.0
+
 flutter:
   uses-material-design: true
+  assets:
+    - locales/en.yaml

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:ffw_photospaces/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -45,7 +46,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
             onPressed: () {
               showModalBottomSheet(context: context, builder: buildAddDescriptionModal);
             },
-            child: const Text('Add description'),
+            child: Text(currentLocalesService.photo_preview_screen['add_description']),
           ),
         ],
       ),
@@ -77,7 +78,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          const Text('description'),
+          Text(currentLocalesService.photo_preview_screen['description']),
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: TextField(
@@ -91,7 +92,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
               onPressed: () {
                 if (_textEditingController.text.length > 60) {
                   ScaffoldMessenger.of(context)
-                      .showSnackBar(const SnackBar(content: Text('You exceeded maximum characeter limit')));
+                      .showSnackBar(SnackBar(content: Text(currentLocalesService.photo_preview_screen['max_char_exceeded'])));
                   return;
                 }
                 setState(() {
