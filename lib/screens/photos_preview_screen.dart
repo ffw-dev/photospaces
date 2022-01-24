@@ -5,13 +5,14 @@ import 'package:camera/camera.dart';
 import 'package:dev_eza_api/main.dart';
 import 'package:dio/dio.dart';
 import 'package:ffw_photospaces/main.dart';
+import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:flutter/material.dart';
 
 class PhotosPreviewScreen extends StatefulWidget {
-  List<XFile> _photos;
+  final List<XFile> _photos;
 
-  PhotosPreviewScreen(this._photos, {Key? key}) : super(key: key);
+  const PhotosPreviewScreen(this._photos, {Key? key}) : super(key: key);
 
   @override
   State<PhotosPreviewScreen> createState() => _PhotosPreviewScreenState();
@@ -39,10 +40,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
               itemCount: widget._photos.length,
               scrollDirection: Axis.vertical,
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                crossAxisSpacing: 1,
-                mainAxisSpacing: 1
-              ),
+                  crossAxisCount: 4, crossAxisSpacing: 1, mainAxisSpacing: 1),
               itemBuilder: (BuildContext context, int index) {
                 var photo = widget._photos[index];
 
@@ -65,23 +63,29 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
                           child: SizedBox(
                               width: 100,
                               height: 100,
-                              child: FittedBox(fit: BoxFit.fill,child: Image.file(File(photo.path), cacheHeight: 1000, cacheWidth: 1000,)))),
+                              child: FittedBox(
+                                  fit: BoxFit.fill,
+                                  child: Image.file(
+                                    File(photo.path),
+                                    cacheHeight: 1000,
+                                    cacheWidth: 1000,
+                                  )))),
                       if (isSelectMode)
                         _selectedPhotos.contains(photo)
                             ? const Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Icon(
-                              Icons.check_circle,
-                              color: Colors.white,
-                            ))
+                                top: 0,
+                                right: 0,
+                                child: Icon(
+                                  Icons.check_circle,
+                                  color: Colors.white,
+                                ))
                             : const Positioned(
-                            top: 0,
-                            right: 0,
-                            child: Icon(
-                              Icons.radio_button_unchecked,
-                              color: Colors.white,
-                            ))
+                                top: 0,
+                                right: 0,
+                                child: Icon(
+                                  Icons.radio_button_unchecked,
+                                  color: Colors.white,
+                                ))
                     ]),
                   ),
                 );
@@ -107,8 +111,8 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
       actions: [
         IconButton(
             onPressed: () {
-              Navigator.of(context).pop();
-            },
+                Navigator.pushNamedAndRemoveUntil(context, '/cameraPreviewScreen', (_) => _.settings.name == '/mockHomeScreen');
+              },
             icon: const Icon(Icons.cancel)),
         SizedBox(
           width: MediaQuery.of(context).size.width * 0.3,

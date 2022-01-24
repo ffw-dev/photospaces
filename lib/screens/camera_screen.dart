@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/screens/photos_preview_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -11,7 +13,7 @@ class CameraScreen extends StatefulWidget {
   _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraScreenState extends State<CameraScreen> {
+class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver {
   bool isCamerasReady = false;
   bool isPhotoTaken = false;
   bool isFinishedTakingPictures = false;
@@ -22,44 +24,61 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   void initState() {
-    init(currentCamera);
+    WidgetsBinding.instance!.addObserver(this);
+
+    Future.delayed(
+        const Duration(milliseconds: 300),
+        () => init(CameraType
+            .back)); //TODO: Temporary fix for a camera crashing the application after pushing this screen via calling Navigator.pushAndRemoveUntil
+
     super.initState();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final CameraController? cameraController = _cameraController;
+  void dispose() {
+    super.dispose();
 
-    // App state changed before we got the chance to initialize.
-    if (cameraController == null || !cameraController.value.isInitialized) {
+    _cameraController?.dispose();
+    WidgetsBinding.instance!.removeObserver(this);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (_cameraController == null || !_cameraController!.value.isInitialized) {
       return;
     }
 
     if (state == AppLifecycleState.inactive) {
-      cameraController.dispose();
+      _cameraController!.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      init(currentCamera);
+      init(CameraType.back);
     }
   }
 
-  void init(CameraType camera) async {
-    if (_cameraController != null) {
-      await _cameraController!.dispose();
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          actions: [buildSwitchCameraButton(context)],
+        ),
+        body: !isCamerasReady ? buildLoadingText() : buildCameraPreview(context));
+  }
 
+  Future<void> init(CameraType camera) async {
     setState(() {
       isCamerasReady = false;
       isFinishedTakingPictures = false;
       isPhotoTaken = false;
     });
 
-    availableCameras().then((value) {
-      currentCamera = camera;
-      _cameraController = CameraController(camera == CameraType.front ? value[1] : value[0], ResolutionPreset.max);
+    await availableCameras().then((value) {
+      currentCamera = CameraType.back;
+      _cameraController = CameraController(value[0], ResolutionPreset.max);
       _cameraController!.initialize().then((_) {
         if (!mounted) {
           return;
         }
+
         setState(() {
           isCamerasReady = true;
         });
@@ -67,20 +86,9 @@ class _CameraScreenState extends State<CameraScreen> {
     });
   }
 
-  @override
-  void dispose() {
-    _cameraController?.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(actions: [buildSwitchCameraButton(context)],), body: !isCamerasReady ? buildLoadingText() : buildCameraPreview(context));
-  }
-
   Center buildLoadingText() {
-    return const Center(
-      child: Text('Loading camera...'),
+    return Center(
+      child: Text(currentLocalesService.camera_screen['loading_camera']),
     );
   }
 
@@ -112,7 +120,8 @@ class _CameraScreenState extends State<CameraScreen> {
 
   GestureDetector buildLastPhotoIndicator(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos))),
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)))
+          .then((value) => init(currentCamera)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: SizedBox(
@@ -145,7 +154,8 @@ class _CameraScreenState extends State<CameraScreen> {
   IconButton buildFinishedTakingPhotosIcon(BuildContext context) {
     return IconButton(
       icon: const Icon(Icons.add_task, size: 64, color: Colors.white),
-      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos))),
+      onPressed: () => Navigator.pushAndRemoveUntil(
+          context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)), (_) => false),
     );
   }
 
@@ -158,10 +168,7 @@ class _CameraScreenState extends State<CameraScreen> {
             width: 70,
             height: 70,
             child: Container(
-              decoration: const BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white
-              ),
+              decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white),
             ),
           ),
           SizedBox(
@@ -170,12 +177,11 @@ class _CameraScreenState extends State<CameraScreen> {
             child: Container(
               decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                color: Colors.white,
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                  width: 2.0,
-                )
-              ),
+                  color: Colors.white,
+                  border: Border.all(
+                    color: Theme.of(context).primaryColor,
+                    width: 2.0,
+                  )),
             ),
           )
         ],
@@ -187,19 +193,23 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   void handleTakeAPicture(BuildContext context) {
-    if(_cameraController == null) {
+    if (_cameraController == null) {
       return;
     }
 
-    if(_cameraController!.value.isTakingPicture) {
+    if (_cameraController!.value.isTakingPicture) {
       return;
     }
 
-    _cameraController!.takePicture().then((value) {
-      setState(() {
-        currentPhotos.add(value);
+    try {
+      _cameraController!.takePicture().then((value) {
+        setState(() {
+          currentPhotos.add(value);
+        });
       });
-    });
+    } catch (e) {
+      print(e);
+    }
   }
 
   IconButton buildSwitchCameraButton(BuildContext context) {
@@ -223,7 +233,8 @@ class _CameraScreenState extends State<CameraScreen> {
         setState(() {
           currentPhotos.isEmpty
               ? Navigator.of(context).pop()
-              : Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)));
+              : Navigator.pushAndRemoveUntil(
+                  context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)), (_) => false);
         });
       },
     );
