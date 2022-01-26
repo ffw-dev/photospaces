@@ -1,23 +1,22 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
-import 'package:ffw_photospaces/main.dart';
+import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class PhotoPreviewScreen extends StatefulWidget {
-  final List<XFile> photos;
+  final List<FileDataTransferObject<XFile>> photos;
   final int clickedImageIndex;
+  final Function(String description) updateParentsDTOCallback;
 
-  const PhotoPreviewScreen(this.photos, this.clickedImageIndex, {Key? key}) : super(key: key);
+  const PhotoPreviewScreen(this.photos, this.clickedImageIndex, {Key? key, required this.updateParentsDTOCallback}) : super(key: key);
 
   @override
   State<PhotoPreviewScreen> createState() => _PhotoPreviewScreenState();
 }
 
 class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
-  final TextEditingController _textEditingController = TextEditingController();
   int currentPhotoIndex = 0;
 
   @override
@@ -41,13 +40,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                   fit: MediaQuery.of(context).orientation == Orientation.landscape ? BoxFit.contain : BoxFit.fitWidth,
                   child: GestureDetector(
                       onHorizontalDragEnd: swipeHandler,
-                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].path)))))),
-          ElevatedButton(
-            onPressed: () {
-              showModalBottomSheet(context: context, builder: buildAddDescriptionModal);
-            },
-            child: Text(currentLocalesService.photo_preview_screen['add_description']),
-          ),
+                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].file.path)))))),
         ],
       ),
     );
@@ -71,38 +64,5 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
         }
       });
     }
-  }
-
-  Widget buildAddDescriptionModal(context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          Text(currentLocalesService.photo_preview_screen['description']),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: TextField(
-              controller: _textEditingController,
-              textAlign: TextAlign.center,
-              maxLength: 60,
-              maxLengthEnforcement: MaxLengthEnforcement.none,
-            ),
-          ),
-          ElevatedButton(
-              onPressed: () {
-                if (_textEditingController.text.length > 60) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(currentLocalesService.photo_preview_screen['max_char_exceeded'])));
-                  return;
-                }
-                setState(() {
-                  _textEditingController.text = '';
-                });
-                Navigator.of(context).pop();
-              },
-              child: const Text('Add'))
-        ],
-      ),
-    );
   }
 }

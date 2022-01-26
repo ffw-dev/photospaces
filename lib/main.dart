@@ -61,7 +61,7 @@ class _MainActivityState extends State<MainActivity> {
     return StoreProvider<AppState>(
         store: store,
         child: MaterialApp(
-          theme: ThemeData(primarySwatch: custom_red, backgroundColor: custom_red),
+          theme: ThemeData(primarySwatch: custom_red, backgroundColor: custom_red, unselectedWidgetColor: Colors.blueAccent),
           routes: {
             '/': (_) => tryCookieLoginAndBuildInitialRoute(),
             '/mockHomeScreen': (_) => const MockHomeScreen(),

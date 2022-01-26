@@ -4,29 +4,33 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:dev_eza_api/main.dart';
 import 'package:dio/dio.dart';
+import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
 import 'package:ffw_photospaces/main.dart';
-import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
+import 'package:ffw_photospaces/widgets/base_outlined_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class PhotosPreviewScreen extends StatefulWidget {
-  final List<XFile> _photos;
+  final List<FileDataTransferObject<XFile>> _photosDTO;
 
-  const PhotosPreviewScreen(this._photos, {Key? key}) : super(key: key);
+  const PhotosPreviewScreen(this._photosDTO, {Key? key}) : super(key: key);
 
   @override
   State<PhotosPreviewScreen> createState() => _PhotosPreviewScreenState();
 }
 
 class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
-  List<XFile> _selectedPhotos = [];
+  List<FileDataTransferObject<XFile>> _selectedPhotos = [];
   bool isSelectMode = true;
   var successFullUploadsCount = 0;
+
+  final TextEditingController _textEditingController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _selectedPhotos = List<XFile>.from(widget._photos);
+    _selectedPhotos = List<FileDataTransferObject<XFile>>.from(widget._photosDTO);
   }
 
   @override
@@ -34,71 +38,17 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
     return Scaffold(
         appBar: buildAppBar(context),
         body: Column(children: [
-          if (isSelectMode) buildCancelSelectionModeButton(),
           Expanded(
-            child: GridView.builder(
-              itemCount: widget._photos.length,
-              scrollDirection: Axis.vertical,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4, crossAxisSpacing: 1, mainAxisSpacing: 1),
-              itemBuilder: (BuildContext context, int index) {
-                var photo = widget._photos[index];
-
-                return GridTile(
-                  child: GestureDetector(
-                    onTap: () => togglePhotoSelect(photo),
-                    onDoubleTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => PhotoPreviewScreen(widget._photos, widget._photos.indexOf(photo)))),
-                    onLongPress: () => setState(() {
-                      isSelectMode = true;
-                      if (_selectedPhotos.contains(photo)) {
-                        return;
-                      }
-                      _selectedPhotos.add(photo);
-                    }),
-                    child: Stack(children: [
-                      Positioned(
-                          child: SizedBox(
-                              width: 100,
-                              height: 100,
-                              child: FittedBox(
-                                  fit: BoxFit.fill,
-                                  child: Image.file(
-                                    File(photo.path),
-                                    cacheHeight: 1000,
-                                    cacheWidth: 1000,
-                                  )))),
-                      if (isSelectMode)
-                        _selectedPhotos.contains(photo)
-                            ? const Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Icon(
-                                  Icons.check_circle,
-                                  color: Colors.white,
-                                ))
-                            : const Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Icon(
-                                  Icons.radio_button_unchecked,
-                                  color: Colors.white,
-                                ))
-                    ]),
-                  ),
-                );
-              },
-            ),
+            child: buildPhotosGrid(),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                buildAddDescriptionButton(),
                 if (!isSelectMode) buildUploadAllButton(context),
-                if (_selectedPhotos.length != widget._photos.length && isSelectMode) buildSelectAllButton(),
+                if (_selectedPhotos.length != widget._photosDTO.length && isSelectMode) buildSelectAllButton(),
                 if (isSelectMode && _selectedPhotos.isNotEmpty) buildUnselectAllButton()
               ],
             ),
@@ -106,16 +56,91 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
         ]));
   }
 
+  GridView buildPhotosGrid() {
+    return GridView.builder(
+            itemCount: widget._photosDTO.length,
+            scrollDirection: Axis.vertical,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, crossAxisSpacing: 1, mainAxisSpacing: 1),
+            itemBuilder: (BuildContext context, int index) {
+              var photoDTO = widget._photosDTO[index];
+
+              return GridTile(
+                child: GestureDetector(
+                  onTap: () => togglePhotoSelect(photoDTO),
+                  onDoubleTap: () => navigateToPhotoPreviewScreen(context, photoDTO),
+                  onLongPress: () => startSelectionModeAndAddPhotoToSelectedPhotos(photoDTO),
+                  child: Stack(children: [
+                    Positioned(
+                        child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: FittedBox(
+                                fit: BoxFit.fill,
+                                child: Image.file(
+                                  File(photoDTO.file.path),
+                                  cacheHeight: 1000,
+                                  cacheWidth: 1000,
+                                )))),
+                    if (isSelectMode)
+                      _selectedPhotos.contains(photoDTO)
+                          ? Positioned(
+                              bottom: 6,
+                              right: 6,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                radius: 10,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(0),
+                                  child: Icon(
+                                    Icons.check_circle,
+                                    size: 20,
+                                    color: Theme.of(context).unselectedWidgetColor,
+                                  ),
+                                ),
+                              ))
+                          : Positioned(
+                              bottom: 6,
+                              right: 6,
+                              child: CircleAvatar(
+                                backgroundColor: Colors.white,
+                                radius: 10,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(0),
+                                  child: Icon(
+                                    Icons.radio_button_unchecked,
+                                    size: 20,
+                                    color: Theme.of(context).unselectedWidgetColor,
+                                  ),
+                                ),
+                              ))
+                  ]),
+                ),
+              );
+            },
+          );
+  }
+
   AppBar buildAppBar(BuildContext context) {
     return AppBar(
       actions: [
         IconButton(
             onPressed: () {
-                Navigator.pushNamedAndRemoveUntil(context, '/cameraPreviewScreen', (_) => _.settings.name == '/mockHomeScreen');
-              },
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/mockHomeScreen', (_) => _.settings.name == '/mockHomeScreen');
+            },
             icon: const Icon(Icons.cancel)),
         SizedBox(
-          width: MediaQuery.of(context).size.width * 0.3,
+          width: MediaQuery.of(context).size.width * 0.08,
+        ),
+        BaseOutlinedButton(
+          'select',
+          null,
+          toggleSelectionMode,
+          initialSelected: true,
+        ),
+        SizedBox(
+          width: MediaQuery.of(context).size.width * 0.07,
         ),
         IconButton(
             onPressed: () async {
@@ -124,93 +149,159 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
                 return;
               }
 
+              if (_textEditingController.text.isEmpty) {
+                showModalBottomSheet(context: context, builder: (context) => buildDescriptionIsEmptyModal(context));
+              } else {
+                await handleUploadAndShowSnackBars(context);
+              }
+
               successFullUploadsCount = 0;
-              await handleUploadAndShowSnackBars(context);
             },
             icon: const Icon(Icons.check_circle)),
       ],
     );
   }
 
-  TextButton buildUnselectAllButton() {
-    return TextButton(
-        onPressed: () async {
-          setState(() {
-            _selectedPhotos = [];
-          });
-        },
-        child: const Padding(
-          padding: EdgeInsets.all(12.0),
-          child: Text(
-            'Unselect all',
-            style: TextStyle(fontSize: 14),
-          ),
-        ));
+  Widget buildAddDescriptionButton() {
+    return BaseOutlinedButton(
+      null,
+      Text(currentLocalesService.photo_preview_screen['add_description']),
+      () {
+        showModalBottomSheet(context: context, builder: buildAddDescriptionModal);
+      },
+      ignoreClick: true,
+    );
   }
 
-  TextButton buildSelectAllButton() {
-    return TextButton(
-        onPressed: () async {
-          setState(() {
-            _selectedPhotos = List<XFile>.from(widget._photos);
-            isSelectMode = true;
-          });
-        },
-        child: Padding(
-          padding: EdgeInsets.all(12.0),
-          child: Text(
-            currentLocalesService.photos_preview_screen['select_all'],
-            style: TextStyle(fontSize: 14),
-          ),
-        ));
+  Widget buildUnselectAllButton() {
+    return BaseOutlinedButton(
+      null,
+      const Text(
+        'Unselect all',
+        style: TextStyle(fontSize: 14),
+      ),
+      () async {
+        setState(() {
+          _selectedPhotos = [];
+        });
+      },
+      ignoreClick: true,
+    );
   }
 
-  TextButton buildUploadAllButton(BuildContext context) {
-    return TextButton(
-        onPressed: () async {
-          _selectedPhotos = List<XFile>.from(widget._photos);
+  Widget buildSelectAllButton() {
+    return BaseOutlinedButton(
+      null,
+      Text(
+        currentLocalesService.photos_preview_screen['select_all'],
+        style: const TextStyle(fontSize: 14),
+      ),
+      () async {
+        setState(() {
+          _selectedPhotos = List<FileDataTransferObject<XFile>>.from(widget._photosDTO);
+          isSelectMode = true;
+        });
+      },
+      ignoreClick: true,
+    );
+  }
+
+  Widget buildUploadAllButton(BuildContext context) {
+    return BaseOutlinedButton(
+      null,
+      Text(
+        currentLocalesService.photos_preview_screen['upload_all'],
+        style: const TextStyle(fontSize: 16),
+      ),
+      () async {
+        _selectedPhotos = List<FileDataTransferObject<XFile>>.from(widget._photosDTO);
+        if (_textEditingController.text.isEmpty) {
+          showModalBottomSheet(context: context, builder: (context) => buildDescriptionIsEmptyModal(context));
+        } else {
           await handleUploadAndShowSnackBars(context);
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(
-            currentLocalesService.photos_preview_screen['select_all'],
-            style: const TextStyle(fontSize: 16),
-          ),
-        ));
+        }
+      },
+      ignoreClick: true,
+    );
   }
 
-  Padding buildUploadNumberOfPhotosButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8),
-      child: GestureDetector(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Upload ${_selectedPhotos.length} photos',
-              style: const TextStyle(
-                fontSize: 18,
+  SnackBar showSnackBarWithText(String text) {
+    return SnackBar(
+      content: Text(text),
+    );
+  }
+
+  Widget buildAddDescriptionModal(context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      body: Column(
+        children: [
+          Text(currentLocalesService.photo_preview_screen['description']),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: TextField(
+              controller: _textEditingController,
+              textAlign: TextAlign.center,
+              maxLength: 60,
+              maxLengthEnforcement: MaxLengthEnforcement.none,
+            ),
+          ),
+          ElevatedButton(
+              onPressed: () {
+                if (_textEditingController.text.length > 60) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(currentLocalesService.photo_preview_screen['max_char_exceeded'])));
+                  return;
+                }
+                setState(() {});
+                Navigator.of(context).pop();
+              },
+              child: const Text('Add'))
+        ],
+      ),
+    );
+  }
+
+  Widget buildDescriptionIsEmptyModal(context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Center(
+            child: Text(
+              'It is better to add a description to an asset.',
+              style: TextStyle(
+                fontSize: 16,
               ),
             ),
-            Icon(
-              Icons.save,
-              size: 24,
-              color: Theme.of(context).primaryColor,
-            )
-          ],
+          ),
         ),
-        onTap: () async {
-          if (_selectedPhotos.isEmpty) {
-            ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(currentLocalesService.photos_preview_screen['no_photo_selected'])));
-            return;
-          }
-
-          successFullUploadsCount = 0;
-          await handleUploadAndShowSnackBars(context);
-        },
-      ),
+        const Spacer(),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  showModalBottomSheet(context: context, builder: (context) => buildAddDescriptionModal(context))
+                      .then((value) => Navigator.pop(context));
+                },
+                child: const Text('Add description'),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.green.shade900,
+                ),
+              ),
+              ElevatedButton(
+                  onPressed: () async {
+                    await handleUploadAndShowSnackBars(context);
+                  },
+                  child: const Text('Upload anyway'))
+            ],
+          ),
+        )
+      ],
     );
   }
 
@@ -223,52 +314,83 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
         showSnackBarWithText('Successfully uploaded $successFullUploadsCount of ${_selectedPhotos.length} pictures.'));
   }
 
-  TextButton buildCancelSelectionModeButton() {
-    return TextButton(
-        onPressed: () async {
-          setState(() {
-            _selectedPhotos = [];
-            _selectedPhotos = List<XFile>.from(widget._photos);
-            isSelectMode = false;
-          });
-        },
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Text(
-            currentLocalesService.photos_preview_screen['cancel_selection_mode'],
-            style: TextStyle(fontSize: 14, color: Theme.of(context).primaryColor),
-          ),
-        ));
-  }
-
   Future<void> createAssetAndUploadPhotos() async {
     successFullUploadsCount = 0;
+    if (_selectedPhotos.isEmpty) {
+      return;
+    }
 
+    // creates asset
     var newAsset = await DevEzaApi.ezAssetEndpoints
         .setSet(FormData.fromMap({
-          "Data": json.encode({"TypeId": "1"})
-        }))
+      "Data": json.encode({"TypeId": "1"})
+    }))
         .then((response) => response.body.results[0]);
-    print(newAsset.identifier);
-    for (var file in _selectedPhotos) {
-      await DevEzaApi.ezFileEndpoints.uploadPost(FormData.fromMap(
-          {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(file.path)}));
 
+    //prints asset ID so I can check it afterwards in eza, and assigns an empty list to .data
+    print(newAsset.identifier);
+    newAsset.data = [];
+
+    //for each photo create an entry in asset.data and upload just a FILE(photo)
+    for (var fileDTO in _selectedPhotos) {
+      try {
+        await DevEzaApi.ezFileEndpoints.uploadPost(FormData.fromMap(
+            {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(fileDTO.file.path)}));
+      } catch (e) {
+        print('error in uploadFile');
+        print(e);
+      }
+
+      // then get that asset again from the API, assign newAsset.data to asset that I fetched from api and try to call set(update) with that asset
+      var asset = await DevEzaApi.ezAssetEndpoints.getGet(newAsset.identifier!).then((value) => value.body.results[0]);
+      asset.data = newAsset.data;
+      String id = newAsset.identifier!;
+
+      try {
+        DevEzaApi.ezAssetEndpoints.setSet(FormData.fromMap({
+          "data": json.encode({"Identifier": id, "Asset.ReelPart_Description": _textEditingController.text})
+        }));
+      } catch (e) {
+        print('error in set $e');
+      }
       successFullUploadsCount++;
     }
 
     await DevEzaApi.ezLabelEndpoints.associateWithPost(FormData.fromMap({"Id": "16", "assetId": newAsset.identifier}));
   }
 
-  void togglePhotoSelect(XFile photo) => isSelectMode
-      ? setState(() {
-          !_selectedPhotos.contains(photo) ? _selectedPhotos.add(photo) : _selectedPhotos.remove(photo);
-        })
-      : null;
+  void toggleSelectionMode() {
+    setState(() {
+      if (!isSelectMode) {
+        _selectedPhotos = [];
+        _selectedPhotos = List<FileDataTransferObject<XFile>>.from(widget._photosDTO);
+      }
 
-  SnackBar showSnackBarWithText(String text) {
-    return SnackBar(
-      content: Text(text),
-    );
+      isSelectMode = !isSelectMode;
+    });
   }
+
+  void startSelectionModeAndAddPhotoToSelectedPhotos(FileDataTransferObject<XFile> photoDTO) {
+    return setState(() {
+      isSelectMode = true;
+      if (_selectedPhotos.contains(photoDTO)) {
+        return;
+      }
+      _selectedPhotos.add(photoDTO);
+    });
+  }
+
+  Future<dynamic> navigateToPhotoPreviewScreen(BuildContext context, FileDataTransferObject<XFile> photoDTO) {
+    return Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => PhotoPreviewScreen(widget._photosDTO, widget._photosDTO.indexOf(photoDTO),
+                updateParentsDTOCallback: (description) => setState(() => photoDTO.description = description))));
+  }
+
+  void togglePhotoSelect(FileDataTransferObject<XFile> fileDTO) => isSelectMode
+      ? setState(() {
+    !_selectedPhotos.contains(fileDTO) ? _selectedPhotos.add(fileDTO) : _selectedPhotos.remove(fileDTO);
+  })
+      : null;
 }

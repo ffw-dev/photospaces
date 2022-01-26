@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:camera/camera.dart';
+import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/screens/photos_preview_screen.dart';
 import 'package:flutter/material.dart';
@@ -120,7 +121,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   GestureDetector buildLastPhotoIndicator(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)))
+      onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos.map((e) => FileDataTransferObject(e)).toList())))
           .then((value) => init(currentCamera)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
@@ -155,7 +156,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     return IconButton(
       icon: const Icon(Icons.add_task, size: 64, color: Colors.white),
       onPressed: () => Navigator.pushAndRemoveUntil(
-          context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)), (_) => false),
+          context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos.map((e) => FileDataTransferObject(e)).toList())), (_) => false),
     );
   }
 
@@ -234,7 +235,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
           currentPhotos.isEmpty
               ? Navigator.of(context).pop()
               : Navigator.pushAndRemoveUntil(
-                  context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos)), (_) => false);
+                  context, MaterialPageRoute(builder: (_) => PhotosPreviewScreen(currentPhotos.map((e) => FileDataTransferObject(e)).toList())), (_) => false);
         });
       },
     );
