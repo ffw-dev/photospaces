@@ -106,13 +106,6 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
                     )
                   ],
                 ),
-                BaseButton(
-                  'Close',
-                  null,
-                  () => Navigator.pop(context),
-                  textColour: Colors.white,
-                  fontSize: 14,
-                ),
               ],
             ),
           ),
