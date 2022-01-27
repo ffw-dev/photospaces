@@ -8,8 +8,10 @@ import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:ffw_photospaces/widgets/base_outlined_button.dart';
+import 'package:ffw_photospaces/widgets/custom_dialog_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_vibrate/flutter_vibrate.dart';
 
 class PhotosPreviewScreen extends StatefulWidget {
   final List<FileDataTransferObject<XFile>> _photosDTO;
@@ -46,10 +48,28 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
+                    child: TextField(
+                      decoration: const InputDecoration(
+                        suffixIcon: Icon(Icons.edit),
+                        hintText: 'Description',
+                        isDense: true,
+                      ),
+                      controller: _textEditingController,
+                      textAlign: TextAlign.left,
+                      maxLength: 60,
+                      maxLengthEnforcement: MaxLengthEnforcement.none,
+                    ),
+                  ),
+                )
+
+                /*
                 buildAddDescriptionButton(),
                 if (!isSelectMode) buildUploadAllButton(context),
                 if (_selectedPhotos.length != widget._photosDTO.length && isSelectMode) buildSelectAllButton(),
-                if (isSelectMode && _selectedPhotos.isNotEmpty) buildUnselectAllButton()
+                if (isSelectMode && _selectedPhotos.isNotEmpty) buildUnselectAllButton()*/
               ],
             ),
           )
@@ -57,68 +77,83 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   }
 
   GridView buildPhotosGrid() {
-    return GridView.builder(
-            itemCount: widget._photosDTO.length,
-            scrollDirection: Axis.vertical,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4, crossAxisSpacing: 1, mainAxisSpacing: 1),
-            itemBuilder: (BuildContext context, int index) {
-              var photoDTO = widget._photosDTO[index];
+    const double GRIDTILE_WIDTH = 129;
+    const double GRIDTILE_HEIGHT = 129;
 
-              return GridTile(
-                child: GestureDetector(
-                  onTap: () => togglePhotoSelect(photoDTO),
-                  onDoubleTap: () => navigateToPhotoPreviewScreen(context, photoDTO),
-                  onLongPress: () => startSelectionModeAndAddPhotoToSelectedPhotos(photoDTO),
-                  child: Stack(children: [
-                    Positioned(
-                        child: SizedBox(
-                            width: 100,
-                            height: 100,
-                            child: FittedBox(
-                                fit: BoxFit.fill,
-                                child: Image.file(
-                                  File(photoDTO.file.path),
-                                  cacheHeight: 1000,
-                                  cacheWidth: 1000,
-                                )))),
-                    if (isSelectMode)
-                      _selectedPhotos.contains(photoDTO)
-                          ? Positioned(
-                              bottom: 6,
-                              right: 6,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.white,
-                                radius: 10,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(0),
-                                  child: Icon(
-                                    Icons.check_circle,
-                                    size: 20,
-                                    color: Theme.of(context).unselectedWidgetColor,
-                                  ),
-                                ),
-                              ))
-                          : Positioned(
-                              bottom: 6,
-                              right: 6,
-                              child: CircleAvatar(
-                                backgroundColor: Colors.white,
-                                radius: 10,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(0),
-                                  child: Icon(
-                                    Icons.radio_button_unchecked,
-                                    size: 20,
-                                    color: Theme.of(context).unselectedWidgetColor,
-                                  ),
-                                ),
-                              ))
-                  ]),
-                ),
-              );
-            },
-          );
+    return GridView.builder(
+      itemCount: widget._photosDTO.length,
+      scrollDirection: Axis.vertical,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: (MediaQuery.of(context).size.width / GRIDTILE_WIDTH).round(),
+          crossAxisSpacing: 0,
+          mainAxisSpacing: 0),
+      itemBuilder: (BuildContext context, int index) {
+        var photoDTO = widget._photosDTO[index];
+
+        return Padding(
+          padding: const EdgeInsets.all(0.8),
+          child: GridTile(
+            child: GestureDetector(
+              onTap: () => togglePhotoSelect(photoDTO),
+              onDoubleTap: () => navigateToPhotoPreviewScreen(context, photoDTO),
+              onLongPress: () {
+                Vibrate.feedback(FeedbackType.impact);
+                showDialog(
+                    context: context,
+                    builder: (_) => CustomDialogBox(
+                      photoDTO: photoDTO,
+                    ));
+              },
+              child: Stack(children: [
+                Positioned(
+                    child: SizedBox(
+                        width: GRIDTILE_WIDTH,
+                        height: GRIDTILE_HEIGHT,
+                        child: FittedBox(
+                            fit: BoxFit.fill,
+                            child: Image.file(
+                              File(photoDTO.file.path),
+                              cacheHeight: 1000,
+                              cacheWidth: 1000,
+                            )))),
+                if (isSelectMode)
+                  _selectedPhotos.contains(photoDTO)
+                      ? Positioned(
+                          bottom: 6,
+                          right: 6,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 10,
+                            child: Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: Icon(
+                                Icons.check_circle,
+                                size: 20,
+                                color: Theme.of(context).unselectedWidgetColor,
+                              ),
+                            ),
+                          ))
+                      : Positioned(
+                          bottom: 6,
+                          right: 6,
+                          child: CircleAvatar(
+                            backgroundColor: Colors.white,
+                            radius: 10,
+                            child: Padding(
+                              padding: const EdgeInsets.all(0),
+                              child: Icon(
+                                Icons.radio_button_unchecked,
+                                size: 20,
+                                color: Theme.of(context).unselectedWidgetColor,
+                              ),
+                            ),
+                          ))
+              ]),
+            ),
+          ),
+        );
+      },
+    );
   }
 
   AppBar buildAppBar(BuildContext context) {
@@ -153,6 +188,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
                 showModalBottomSheet(context: context, builder: (context) => buildDescriptionIsEmptyModal(context));
               } else {
                 await handleUploadAndShowSnackBars(context);
+                popAllAndNavigateToMockScreen(context);
               }
 
               successFullUploadsCount = 0;
@@ -160,6 +196,10 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             icon: const Icon(Icons.check_circle)),
       ],
     );
+  }
+
+  void popAllAndNavigateToMockScreen(BuildContext context) {
+    Navigator.pushNamedAndRemoveUntil(context, '/mockHomeScreen', (route) => false);
   }
 
   Widget buildAddDescriptionButton() {
@@ -296,6 +336,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
               ElevatedButton(
                   onPressed: () async {
                     await handleUploadAndShowSnackBars(context);
+                    popAllAndNavigateToMockScreen(context);
                   },
                   child: const Text('Upload anyway'))
             ],
@@ -323,8 +364,8 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
     // creates asset
     var newAsset = await DevEzaApi.ezAssetEndpoints
         .setSet(FormData.fromMap({
-      "Data": json.encode({"TypeId": "1"})
-    }))
+          "Data": json.encode({"TypeId": "1"})
+        }))
         .then((response) => response.body.results[0]);
 
     //prints asset ID so I can check it afterwards in eza, and assigns an empty list to .data
@@ -390,7 +431,7 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
 
   void togglePhotoSelect(FileDataTransferObject<XFile> fileDTO) => isSelectMode
       ? setState(() {
-    !_selectedPhotos.contains(fileDTO) ? _selectedPhotos.add(fileDTO) : _selectedPhotos.remove(fileDTO);
-  })
+          !_selectedPhotos.contains(fileDTO) ? _selectedPhotos.add(fileDTO) : _selectedPhotos.remove(fileDTO);
+        })
       : null;
 }
