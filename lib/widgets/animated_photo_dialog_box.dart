@@ -38,7 +38,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.pop(context),
+      onVerticalDragStart: (_) => Navigator.pop(context),
       child: Dialog(
         insetPadding: isFullScreenMode ? const EdgeInsets.symmetric(vertical: 0, horizontal: 4) : const EdgeInsets.symmetric(horizontal:20),
         shape: RoundedRectangleBorder(
@@ -60,7 +60,8 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
           height: MEDIAQUERY_HEIGHT_ADJUSTED,
           width: MEDIAQUERY_WIDTH_ADJUSTED,
           child: GestureDetector(
-            onTap: () => setState(() {
+            onVerticalDragStart: (_) => Navigator.of(context).pop(),
+            onVerticalDragCancel: () => setState(() {
               isFullScreenMode = !isFullScreenMode;
               MEDIAQUERY_HEIGHT_ADJUSTED == 500 ? MEDIAQUERY_HEIGHT_ADJUSTED = 700 : MEDIAQUERY_HEIGHT_ADJUSTED = 500;
               MEDIAQUERY_WIDTH_ADJUSTED == 500 ? MEDIAQUERY_WIDTH_ADJUSTED = 700 : MEDIAQUERY_WIDTH_ADJUSTED = 500;
