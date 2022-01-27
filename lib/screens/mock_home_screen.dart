@@ -3,8 +3,18 @@ import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class MockHomeScreen extends StatelessWidget {
+class MockHomeScreen extends StatefulWidget {
   const MockHomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<MockHomeScreen> createState() => _MockHomeScreenState();
+}
+
+class _MockHomeScreenState extends State<MockHomeScreen> {
+  int ICONSIZE = 62;
+  Color colors = Colors.red;
+
+  int widths = 10;
 
   @override
   Widget build(BuildContext context) {
@@ -21,19 +31,7 @@ class MockHomeScreen extends StatelessWidget {
                   Icons.add_a_photo,
                   color: Theme.of(context).primaryColor,
                 ),
-              ),/*
-              IconButton(
-                onPressed: () async {
-                  DevEzaApi.ezAssetEndpoints.getGet('81790b20-fbd6-4ff6-a856-4e182fac2a41').then((value) {
-                    print(value.body.results[0].data![0].fields!['ReelPart_Description']);
-                  });
-                },
-                iconSize: 62,
-                icon: Icon(
-                  Icons.add_a_photo,
-                  color: Theme.of(context).primaryColor,
-                ),
-              ),*/
+              ),
             ],
           ),
       ),

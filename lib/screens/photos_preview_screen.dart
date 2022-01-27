@@ -8,7 +8,7 @@ import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
 import 'package:ffw_photospaces/widgets/base_outlined_button.dart';
-import 'package:ffw_photospaces/widgets/custom_dialog_box.dart';
+import 'package:ffw_photospaces/widgets/animated_photo_dialog_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
@@ -26,6 +26,8 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   List<FileDataTransferObject<XFile>> _selectedPhotos = [];
   bool isSelectMode = true;
   var successFullUploadsCount = 0;
+  double GRIDTILE_WIDTH = 129;
+  double GRIDTILE_HEIGHT = 129;
 
   final TextEditingController _textEditingController = TextEditingController();
 
@@ -77,9 +79,6 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   }
 
   GridView buildPhotosGrid() {
-    const double GRIDTILE_WIDTH = 129;
-    const double GRIDTILE_HEIGHT = 129;
-
     return GridView.builder(
       itemCount: widget._photosDTO.length,
       scrollDirection: Axis.vertical,
@@ -96,26 +95,31 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
             child: GestureDetector(
               onTap: () => togglePhotoSelect(photoDTO),
               onDoubleTap: () => navigateToPhotoPreviewScreen(context, photoDTO),
-              onLongPress: () {
-                Vibrate.feedback(FeedbackType.impact);
-                showDialog(
-                    context: context,
-                    builder: (_) => CustomDialogBox(
-                      photoDTO: photoDTO,
-                    ));
+              onLongPress: () async {
+                await animateGridTileWidth();
+                await Future.delayed(const Duration(milliseconds: 150), () {
+                  showDialog(
+                      context: context,
+                      builder: (_) => AnimatedPhotoDialogBox(
+                        photoDTO: photoDTO, callback: () => setState(() {
+                        widget._photosDTO.remove(photoDTO);
+                        }),
+                      ));
+                  Vibrate.feedback(FeedbackType.impact);
+                });
+
               },
               child: Stack(children: [
                 Positioned(
-                    child: SizedBox(
+                    child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
                         width: GRIDTILE_WIDTH,
                         height: GRIDTILE_HEIGHT,
-                        child: FittedBox(
-                            fit: BoxFit.fill,
-                            child: Image.file(
-                              File(photoDTO.file.path),
-                              cacheHeight: 1000,
-                              cacheWidth: 1000,
-                            )))),
+                        child: Image.file(
+                          File(photoDTO.file.path),
+                          cacheHeight: 1000,
+                          cacheWidth: 1000,
+                        ))),
                 if (isSelectMode)
                   _selectedPhotos.contains(photoDTO)
                       ? Positioned(
@@ -154,6 +158,16 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
         );
       },
     );
+  }
+
+  Future<void> animateGridTileWidth() async {
+    setState(() {
+      GRIDTILE_WIDTH -= 10;
+    });
+    await Future.delayed(const Duration(milliseconds: 150), null);
+    setState(() {
+      GRIDTILE_WIDTH += 10;
+    });
   }
 
   AppBar buildAppBar(BuildContext context) {
