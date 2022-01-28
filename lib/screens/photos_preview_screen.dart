@@ -1,6 +1,5 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:camera/camera.dart';
-import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/add_description_photo.dart';
@@ -89,6 +88,6 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
 
   void toggleSelectionMode() => setState(() => isSelectMode = !isSelectMode);
 
-  void startSelectionModeAndAddPhotoToSelectedPhotos(FileDataTransferObject<XFile> photoDTO) =>
+  void startSelectionModeAndAddPhotoToSelectedPhotos(SelectablePhotoWrapper photoDTO) =>
       setState(() => isSelectMode = true);
 }

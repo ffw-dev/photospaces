@@ -106,7 +106,7 @@ class _PhotosGridViewState extends State<PhotosGridView> {
                 await Future.delayed(const Duration(milliseconds: 150), () {
                   showDialog(
                       context: context,
-                      builder: (_) => AnimatedPhotoDialogBox(photoDTO: photoWrapper.photo, callback: () => widget.onRemovePhoto(photoWrapper)));
+                      builder: (_) => AnimatedPhotoDialogBox(photoDTO: photoWrapper, callback: () => widget.onRemovePhoto(photoWrapper)));
                 });
               },
               child: buildGridTilePhotoStack(photoWrapper),
@@ -135,15 +135,6 @@ class _PhotosGridViewState extends State<PhotosGridView> {
             .width / animatedContainerWidth).round(),
         crossAxisSpacing: 0,
         mainAxisSpacing: 0);
-  }
-
-  Future<dynamic> navigateToPhotoPreviewScreen(BuildContext context, SelectablePhotoWrapper photoDTO) {
-    return Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (_) =>
-                PhotoPreviewScreen(widget.photosDTO, widget.photosDTO.indexOf(photoDTO),
-                    updateParentsDTOCallback: (description) => setState(() => photoDTO.photo.description = description))));
   }
 
   Future<void> animateGridTileWidth() async {

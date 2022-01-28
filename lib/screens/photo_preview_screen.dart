@@ -38,7 +38,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                   fit: MediaQuery.of(context).orientation == Orientation.landscape ? BoxFit.contain : BoxFit.fitWidth,
                   child: GestureDetector(
                       onHorizontalDragEnd: swipeHandler,
-                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].photo.file.path)))))),
+                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].photo.path)))))),
         ],
       ),
     );

@@ -23,7 +23,7 @@ class _PhotoAnimatedContainerState extends State<PhotoAnimatedContainer> {
             width: widget.gridTileWidth,
             height: widget.gridTileHeight,
             child: Image.file(
-              File(widget.photoWrapper.photo.file.path),
+              File(widget.photoWrapper.photo.path),
               fit: BoxFit.cover,
             )));
   }

@@ -25,7 +25,7 @@ mixin EzAssetMixin {
     for (var fileDTO in photosWrapper) {
       try {
         await DevEzaApi.ezFileEndpoints.uploadPost(FormData.fromMap(
-            {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(fileDTO.photo.file.path)}));
+            {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(fileDTO.photo.path)}));
       } catch (e) {
         print('error in uploadFile');
         print(e);

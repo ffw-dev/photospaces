@@ -156,12 +156,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
             Align(
                 alignment: Alignment.centerLeft,
                 child: LastPhotoIndicator(
-                  photos: widget.photos.map((e) => e.photo).toList(),
+                  photos: widget.photos,
                 )),
           Align(alignment: Alignment.center, child: TakePictureButton(callback: () => handleTakeAPicture(context))),
           Align(
               alignment: Alignment.centerRight,
-              child: FinishTakingPhotosButton(widget.photos.map((e) => e.photo).toList()))
+              child: FinishTakingPhotosButton(widget.photos))
         ],
       ),
     );

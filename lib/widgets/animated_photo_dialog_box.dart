@@ -1,14 +1,13 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:camera/camera.dart';
-import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
+import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
 import 'package:ffw_photospaces/widgets/base_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AnimatedPhotoDialogBox extends StatefulWidget {
-  final FileDataTransferObject<XFile> photoDTO;
+  final SelectablePhotoWrapper photoDTO;
   final VoidCallback callback;
 
   const AnimatedPhotoDialogBox({Key? key, required this.photoDTO, required this.callback}) : super(key: key);
@@ -77,7 +76,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
                 decoration: BoxDecoration(
                   borderRadius: RADIUS,
                   color: Colors.transparent,
-                  image: DecorationImage(image: FileImage(File(widget.photoDTO.file.path)), fit: BoxFit.fill),
+                  image: DecorationImage(image: FileImage(File(widget.photoDTO.photo.path)), fit: BoxFit.fill),
                 ),
                 child: null,
               ),
