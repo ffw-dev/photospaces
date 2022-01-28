@@ -1,14 +1,14 @@
 import 'package:async_redux/async_redux.dart';
 import 'package:camera/camera.dart';
+import 'package:ffw_photospaces/components/camera_preview/finish_taking_photos_button.dart';
+import 'package:ffw_photospaces/components/camera_preview/last_photo_indicator.dart';
+import 'package:ffw_photospaces/components/camera_preview/take_picture_button.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/mixins/snackbars_mixin.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/add_photo_action.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/replace_photos_action.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
-import 'package:ffw_photospaces/widgets/camera_preview/finish_taking_photos_button.dart';
-import 'package:ffw_photospaces/widgets/camera_preview/last_photo_indicator.dart';
-import 'package:ffw_photospaces/widgets/camera_preview/take_picture_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 

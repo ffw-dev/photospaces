@@ -1,19 +1,19 @@
 import 'dart:io';
 
 import 'package:async_redux/async_redux.dart';
+import 'package:ffw_photospaces/components/photos_preview/photo_animated_container.dart';
+import 'package:ffw_photospaces/components/photos_preview/selected_icon.dart';
+import 'package:ffw_photospaces/components/photos_preview/unselected_icon.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/remove_photo_action.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/toggle_selection_action.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
-import 'package:ffw_photospaces/screens/photo_preview_screen.dart';
-import 'package:ffw_photospaces/widgets/photos_preview/photo_animated_container.dart';
-import 'package:ffw_photospaces/widgets/photos_preview/selected_icon.dart';
-import 'package:ffw_photospaces/widgets/photos_preview/unselected_icon.dart';
+import 'package:ffw_photospaces/widgets/animated_photo_dialog_box.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_vibrate/flutter_vibrate.dart';
 
-import '../animated_photo_dialog_box.dart';
 
 class PhotosGridViewConnector extends StatelessWidget {
   final bool isSelectMode;

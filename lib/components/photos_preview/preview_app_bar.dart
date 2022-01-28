@@ -4,10 +4,10 @@ import 'package:ffw_photospaces/mixins/ez_asset_mixin.dart';
 import 'package:ffw_photospaces/mixins/snackbars_mixin.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/replace_photos_action.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
+import 'package:ffw_photospaces/widgets/base_outlined_button.dart';
 import 'package:flutter/material.dart';
 
 import '../../main.dart';
-import '../base_outlined_button.dart';
 
 class PreviewAppBarConnector extends StatelessWidget implements PreferredSizeWidget {
   final VoidCallback callBack;

@@ -1,11 +1,10 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:camera/camera.dart';
+import 'package:ffw_photospaces/components/photos_preview/grid_photo.dart';
+import 'package:ffw_photospaces/components/photos_preview/preview_app_bar.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/add_description_photo.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
-import 'package:ffw_photospaces/widgets/photos_preview/grid_photo.dart';
-import 'package:ffw_photospaces/widgets/photos_preview/preview_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
