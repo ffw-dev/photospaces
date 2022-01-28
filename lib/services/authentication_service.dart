@@ -1,8 +1,7 @@
 import 'package:dev_eza_api/endpoints/authentication_endpoints.dart';
 import 'package:dev_eza_api/main.dart';
-import 'package:dio/dio.dart';
 import 'package:ffw_photospaces/main.dart';
-import 'package:ffw_photospaces/redux/actions/authentication_actions.dart';
+import 'package:ffw_photospaces/redux/actions/authentication_actions/set_authenticated_state_action.dart';
 import 'package:ffw_photospaces/redux/state_parts/login_state.dart';
 import 'package:ffw_photospaces/services/secure_cookie_service.dart';
 

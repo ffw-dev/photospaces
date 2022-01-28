@@ -1,12 +1,10 @@
 import 'dart:io';
-
-import 'package:camera/camera.dart';
-import 'package:ffw_photospaces/data_transfer_objects/file_data_transfer_object.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
+
 class PhotoPreviewScreen extends StatefulWidget {
-  final List<FileDataTransferObject<XFile>> photos;
+  final List<SelectablePhotoWrapper> photos;
   final int clickedImageIndex;
   final Function(String description) updateParentsDTOCallback;
 
@@ -40,7 +38,7 @@ class _PhotoPreviewScreenState extends State<PhotoPreviewScreen> {
                   fit: MediaQuery.of(context).orientation == Orientation.landscape ? BoxFit.contain : BoxFit.fitWidth,
                   child: GestureDetector(
                       onHorizontalDragEnd: swipeHandler,
-                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].file.path)))))),
+                      child: InteractiveViewer(child: Image.file(File(widget.photos[currentPhotoIndex].photo.file.path)))))),
         ],
       ),
     );

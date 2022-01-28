@@ -65,7 +65,7 @@ class _MainActivityState extends State<MainActivity> {
           routes: {
             '/': (_) => tryCookieLoginAndBuildInitialRoute(),
             '/mockHomeScreen': (_) => const MockHomeScreen(),
-            '/cameraPreviewScreen': (_) => const CameraScreen(),
+            '/cameraPreviewScreen': (_) => const CameraScreenConnector(),
           },
         ));
   }
@@ -75,7 +75,7 @@ class _MainActivityState extends State<MainActivity> {
         future: tryLoginByCookie,
         builder: (ctx, result) {
           return !result.hasData
-              ? const CircularProgressIndicator()
+              ? const Scaffold(body: Center(child: CircularProgressIndicator()))
               : result.data != true
                   ? const LoginScreen()
                   : const MockHomeScreen();

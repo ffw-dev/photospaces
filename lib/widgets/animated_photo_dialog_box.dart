@@ -37,16 +37,19 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onVerticalDragStart: (_) => Navigator.pop(context),
-      child: Dialog(
-        insetPadding: isFullScreenMode ? const EdgeInsets.symmetric(vertical: 0, horizontal: 4) : const EdgeInsets.symmetric(horizontal:20),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(50),
+    return SizedBox.expand(
+      child: GestureDetector(
+        onVerticalDragStart: (_) => Navigator.pop(context),
+        child: Dialog(
+          insetPadding: isFullScreenMode ? const EdgeInsets.symmetric(vertical: 0, horizontal: 4) : const EdgeInsets.symmetric(horizontal:0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(50),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Padding(padding: isFullScreenMode ? const EdgeInsets.symmetric(vertical: 0, horizontal: 4) : const EdgeInsets.symmetric(horizontal:20),
+          child: contentBox(context)),
         ),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        child: contentBox(context),
       ),
     );
   }
@@ -67,7 +70,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
               MEDIAQUERY_WIDTH_ADJUSTED == 500 ? MEDIAQUERY_WIDTH_ADJUSTED = 700 : MEDIAQUERY_WIDTH_ADJUSTED = 500;
             }),
             child: Material(
-              elevation: 12,
+              elevation: 0,
               borderRadius: RADIUS,
               color: Colors.transparent,
               child: Container(
@@ -91,7 +94,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
                   children: [
                     Icon(
                       Icons.delete,
-                      color: Theme.of(context).primaryColor,
+                      color: Theme.of(context).primaryColor.withGreen(240),
                     ),
                     BaseButton(
                       'Remove image',
@@ -100,7 +103,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
                         widget.callback();
                         Navigator.pop(context);
                       },
-                      textColour: Theme.of(context).primaryColor,
+                      textColour: Theme.of(context).primaryColor.withGreen(240),
                       fontSize: 14,
                       padding: 0,
                     )

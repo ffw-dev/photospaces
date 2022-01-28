@@ -2,8 +2,10 @@ class LoginState {
   var authenticated = AuthenticatedState.checking;
   get isAuthenticated => authenticated;
 
+  LoginState._();
+
   static LoginState initialState() {
-    var initialState = LoginState();
+    var initialState = LoginState._();
     initialState.authenticated = AuthenticatedState.unauthenticated;
 
     return initialState;

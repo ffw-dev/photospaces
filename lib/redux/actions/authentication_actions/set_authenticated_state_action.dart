@@ -12,7 +12,7 @@ class SetAuthenticatedStateAction extends ReduxAction<AppState> {
   AppState reduce() {
     store.state.loginState.authenticated = authenticatedState;
 
-    return state.copy(loginState: state.loginState);
+    return state.copy(loginState: state.loginState, photosState: state.photosState);
   }
 
 }
