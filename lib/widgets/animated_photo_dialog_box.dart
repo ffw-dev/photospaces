@@ -6,17 +6,19 @@ import 'package:ffw_photospaces/widgets/base_button.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-class AnimatedPhotoDialogBox extends StatefulWidget {
+class SwipableAnimatedPhotosDialogBox extends StatefulWidget {
   final List<SelectablePhotoWrapper> photos;
   final Function(SelectablePhotoWrapper s) callback;
 
-  const AnimatedPhotoDialogBox({Key? key, required this.photos, required this.callback}) : super(key: key);
+  final int startingIndex;
+
+  const SwipableAnimatedPhotosDialogBox({Key? key, required this.photos, required this.callback, required this.startingIndex}) : super(key: key);
 
   @override
-  _AnimatedPhotoDialogBoxState createState() => _AnimatedPhotoDialogBoxState();
+  _SwipableAnimatedPhotosDialogBoxState createState() => _SwipableAnimatedPhotosDialogBoxState();
 }
 
-class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
+class _SwipableAnimatedPhotosDialogBoxState extends State<SwipableAnimatedPhotosDialogBox> {
   var RADIUS = const BorderRadius.all(Radius.circular(20));
   double MEDIAQUERY_HEIGHT_ADJUSTED = 10;
   double MEDIAQUERY_WIDTH_ADJUSTED = 10;
@@ -26,7 +28,7 @@ class _AnimatedPhotoDialogBoxState extends State<AnimatedPhotoDialogBox> {
 
   @override
   void initState() {
-    photoIndex = widget.photos.length == 1 ? 0 : (widget.photos.length / 2).round();
+    photoIndex = widget.startingIndex;
 
     Future.delayed(Duration(milliseconds: 100), () {
       setState(() {

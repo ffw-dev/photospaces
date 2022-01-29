@@ -107,7 +107,7 @@ class _PhotosGridViewState extends State<PhotosGridView> {
                   widget.photosDTO.isEmpty ? null :
                   showDialog(
                       context: context,
-                      builder: (_) =>  AnimatedPhotoDialogBox(photos: widget.photosDTO, callback: (SelectablePhotoWrapper p) => widget.onRemovePhoto(p)));
+                      builder: (_) =>  SwipableAnimatedPhotosDialogBox(photos: widget.photosDTO, startingIndex: index,callback: (SelectablePhotoWrapper p) => widget.onRemovePhoto(p)));
                 });
               },
               child: buildGridTilePhotoStack(photoWrapper),
