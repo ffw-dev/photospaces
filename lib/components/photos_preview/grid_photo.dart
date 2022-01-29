@@ -104,9 +104,10 @@ class _PhotosGridViewState extends State<PhotosGridView> {
               onLongPress: () async {
                 await animateGridTileWidth();
                 await Future.delayed(const Duration(milliseconds: 150), () {
+                  widget.photosDTO.isEmpty ? null :
                   showDialog(
                       context: context,
-                      builder: (_) => AnimatedPhotoDialogBox(photoDTO: photoWrapper, callback: () => widget.onRemovePhoto(photoWrapper)));
+                      builder: (_) =>  AnimatedPhotoDialogBox(photos: widget.photosDTO, callback: (SelectablePhotoWrapper p) => widget.onRemovePhoto(p)));
                 });
               },
               child: buildGridTilePhotoStack(photoWrapper),
