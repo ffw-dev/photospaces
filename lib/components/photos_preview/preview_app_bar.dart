@@ -109,7 +109,7 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
       showSnackBarWithTextWithDuration(
           context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textDescriptionMissing);
     } else {
-      showSnackBarPersistWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading);
+      showSnackBarPersistWithWidget(context, Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [Text(CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading), const CircularProgressIndicator()],));
 
       try {
         await createAssetAndUploadPhotos(photos, assetDescription);

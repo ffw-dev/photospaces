@@ -16,4 +16,11 @@ mixin SnackBarsMixin {
       content: Text(text),
     ));
   }
+
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBarPersistWithWidget(BuildContext context, Widget widget) {
+    return ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      duration: const Duration(days: 1),
+      content: widget,
+    ));
+  }
 }
