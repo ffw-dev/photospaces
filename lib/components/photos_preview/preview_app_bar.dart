@@ -81,8 +81,6 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
   }
 
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
-    var sfm = ScaffoldMessenger.of(context);
-
     if (isSelectionEmpty) {
       showSnackBarWithText(context, 'no photos selected');
       return;
