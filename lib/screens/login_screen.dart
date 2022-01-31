@@ -1,5 +1,6 @@
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/services/authentication_service.dart';
+import 'package:ffw_photospaces/services/current_locales_service.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -28,14 +29,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 TextFormField(
                   controller: emailInputController,
                   decoration: InputDecoration(
-                      labelText: currentLocalesService.login_screen['email'],
+                      labelText: CurrentLocalesService.screenLogin.textEmail,
                       icon: const Icon(Icons.account_circle_rounded)),
                 ),
                 TextFormField(
                   controller: passwordInputController,
                   obscureText: true,
                   decoration: InputDecoration(
-                      labelText: currentLocalesService.login_screen['password'], icon: const Icon(Icons.lock)),
+                      labelText: CurrentLocalesService.screenLogin.textPassword, icon: const Icon(Icons.lock)),
                 ),
                 const Spacer(),
                 ElevatedButton(
@@ -44,7 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           .login(emailInputController.text, passwordInputController.text)
                           .then((value) => value == true ? Navigator.pushNamed(context, '/mockHomeScreen') : null);
                     },
-                    child: Text(currentLocalesService.login_screen['login']))
+                    child: Text(CurrentLocalesService.screenLogin.textLogin))
               ],
             ),
           ),

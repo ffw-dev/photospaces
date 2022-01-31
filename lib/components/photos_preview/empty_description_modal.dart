@@ -1,16 +1,17 @@
+import 'package:ffw_photospaces/services/current_locales_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class EmptyDescriptionSnackBar extends SnackBar {
-  const EmptyDescriptionSnackBar.create(BuildContext context)
+  EmptyDescriptionSnackBar.create(BuildContext context)
       : super(
-          content: const SnackBar(
+          content: SnackBar(
               content: Padding(
-            padding: EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(8.0),
             child: Center(
               child: Text(
-                'It is better to add a description to an asset.',
-                style: TextStyle(
+                CurrentLocalesService.screenPhotosPreview.componentEmptyDescriptionModal.text,
+                style: const TextStyle(
                   fontSize: 16,
                 ),
               ),

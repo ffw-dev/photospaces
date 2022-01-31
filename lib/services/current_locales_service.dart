@@ -1,13 +1,35 @@
-import 'package:yaml/yaml.dart';
-
 class CurrentLocalesService {
-  final YamlMap _yamlMap;
+  static _PhotosPreviewScreenLocale get screenPhotosPreview => _PhotosPreviewScreenLocale();
+  static _LoginScreenLocale get screenLogin => _LoginScreenLocale();
 
-  CurrentLocalesService(this._yamlMap);
+  static _Errors get errors => _Errors();
+}
 
-  get _screens => _yamlMap['screens'];
-  get camera_screen => _screens['camera_screen'];
-  get login_screen => _screens['login_screen'];
-  get photo_preview_screen => _screens['photo_preview_screen'];
-  get photos_preview_screen => _screens['photos_preview_screen'];
+class _PhotosPreviewScreenLocale {
+  _EmptyDescriptionModal get componentEmptyDescriptionModal => _EmptyDescriptionModal();
+  _PreviewAppBar get componentPreviewAppBar => _PreviewAppBar();
+
+  get textInputHint => "Description";
+}
+
+class _EmptyDescriptionModal {
+  get text => "It is better to add a description to an asset";
+}
+
+class _PreviewAppBar {
+  get textSelect => "select";
+  get textNoPhotosSelected => "No photos selected";
+  get textDescriptionMissing => "Please add a description to an asset";
+  get textUploading => "Uploading, please wait";
+  get textSuccessfulUpload => "Successfully uploaded";
+}
+
+class _LoginScreenLocale {
+  get textEmail => "Email";
+  get textPassword => "Password";
+  get textLogin => "Login";
+}
+
+class _Errors {
+  get textUploadFailed => "There was an error uploading photos";
 }

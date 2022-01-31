@@ -5,19 +5,14 @@ import 'package:ffw_photospaces/screens/camera_screen.dart';
 import 'package:ffw_photospaces/screens/login_screen.dart';
 import 'package:ffw_photospaces/screens/mock_home_screen.dart';
 import 'package:ffw_photospaces/services/authentication_service.dart';
-import 'package:ffw_photospaces/services/current_locales_service.dart';
 import 'package:ffw_photospaces/services/session_service.dart';
 import 'package:flutter/material.dart';
-import "package:flutter/services.dart" as flutter_services;
-import 'package:yaml/yaml.dart';
-
-late CurrentLocalesService currentLocalesService;
 
 void main() async {
   configureDependencies();
   WidgetsFlutterBinding.ensureInitialized();
-  currentLocalesService = CurrentLocalesService(
-      await flutter_services.rootBundle.loadString("locales/en.yaml").then((value) => loadYaml(value)));
+  /*currentLocalesService = CurrentLocalesService(
+      await flutter_services.rootBundle.loadString("locales/en.yaml").then((value) => loadYaml(value)));*/
   runApp(const MainActivity());
 }
 

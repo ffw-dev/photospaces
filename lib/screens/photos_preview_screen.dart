@@ -5,6 +5,7 @@ import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.d
 import 'package:ffw_photospaces/main.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/add_description_photo.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
+import 'package:ffw_photospaces/services/current_locales_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -62,7 +63,8 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
       appBar: PreviewAppBarConnector(toggleSelectionMode, textControllerText),
       body: Column(children: [
         Expanded(child: PhotosGridViewConnector(isSelectMode: isSelectMode)),
-        Padding(padding: const EdgeInsets.all(8.0),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [Expanded(child: buildTextInput())],
@@ -73,9 +75,9 @@ class _PhotosPreviewScreenState extends State<PhotosPreviewScreen> {
   Widget buildTextInput() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24),
         child: TextField(
-          decoration: const InputDecoration(
-            suffixIcon: Icon(Icons.edit),
-            hintText: 'Description',
+          decoration: InputDecoration(
+            suffixIcon: const Icon(Icons.edit),
+            hintText: CurrentLocalesService.screenPhotosPreview.textInputHint,
             isDense: true,
           ),
           controller: _textEditingController,

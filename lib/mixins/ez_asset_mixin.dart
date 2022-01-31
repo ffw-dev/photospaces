@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:dev_eza_api/main.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
+import 'package:ffw_photospaces/services/current_locales_service.dart';
 
 mixin EzAssetMixin {
   Future<void> createAssetAndUploadPhotos(List<SelectablePhotoWrapper> photosWrapper, String description) async {
@@ -27,7 +28,7 @@ mixin EzAssetMixin {
         await DevEzaApi.ezFileEndpoints.uploadPost(FormData.fromMap(
             {"assetId": newAsset.identifier, "Type": "3", "File": await MultipartFile.fromFile(fileDTO.photo.path)}));
       } catch (e) {
-        print('error in uploadFile');
+        print(CurrentLocalesService.errors.textUploadFailed);
         print(e);
       }
 
