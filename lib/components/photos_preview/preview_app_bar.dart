@@ -84,24 +84,24 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
     var sfm = ScaffoldMessenger.of(context);
 
     if (isSelectionEmpty) {
-      sfm.showSnackBar(showSnackBarWithText('no photos selected'));
+      showSnackBarWithText(context, 'no photos selected');
       return;
     }
 
     if (assetDescription.isEmpty) {
-      sfm.showSnackBar(showSnackBarWithText("Please add a description"));
+      showSnackBarWithText(context, "Please add a description");
     } else {
-      sfm.showSnackBar(showSnackBarWithText(currentLocalesService.photos_preview_screen['uploading']));
+      showSnackBarWithText(context, currentLocalesService.photos_preview_screen['uploading']);
 
       try{
         await createAssetAndUploadPhotos(photos, assetDescription);
       } catch (e) {
-        sfm.showSnackBar(showSnackBarWithText('there was an error uploading photos: $e'));
+        showSnackBarWithText(context, 'there was an error uploading photos: $e');
         return;
       }
 
-      sfm.showSnackBar(showSnackBarWithText(
-          'Successfully uploaded ${photos.where((element) => element.isSelected).length} pictures.'));
+      showSnackBarWithText(context,
+          'Successfully uploaded ${photos.where((element) => element.isSelected).length} pictures.');
 
       popAllAndNavigateToMockScreen(context);
     }

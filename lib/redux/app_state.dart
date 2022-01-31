@@ -35,5 +35,5 @@ class AppState {
           loginState == other.loginState && photosState == other.photosState;
 
   @override
-  int get hashCode => loginState.hashCode;
+  int get hashCode => loginState.hashCode + photosState.hashCode;
 }

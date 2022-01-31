@@ -181,7 +181,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
       var photo = await _cameraController!.takePicture().then((value) => value);
       setState(() => widget.onAddPhoto(photo));
     } catch (e) {
-      showSnackBarWithText(e.toString());
+      showSnackBarWithText(context, e.toString());
     }
   }
 }
