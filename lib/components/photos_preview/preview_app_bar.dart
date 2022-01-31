@@ -101,7 +101,7 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
 
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
     if (isSelectionEmpty) {
-      showSnackBarWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading);
+      showSnackBarWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textNoPhotosSelected);
       return;
     }
 
