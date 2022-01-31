@@ -101,24 +101,27 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
 
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
     if (isSelectionEmpty) {
-      showSnackBarWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textNoPhotosSelected);
+      showSnackBarWithTextWithDuration(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textNoPhotosSelected);
       return;
     }
 
     if (assetDescription.isEmpty) {
-      showSnackBarWithText(
+      showSnackBarWithTextWithDuration(
           context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textDescriptionMissing);
     } else {
-      showSnackBarWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading);
+      showSnackBarPersistWithText(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading);
 
       try {
         await createAssetAndUploadPhotos(photos, assetDescription);
       } catch (e) {
-        showSnackBarWithText(context, CurrentLocalesService.errors.textUploadFailed);
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        showSnackBarWithTextWithDuration(context, CurrentLocalesService.errors.textUploadFailed, milliseconds: 2000);
         return;
+      } finally {
+        ScaffoldMessenger.of(context).clearSnackBars();
       }
 
-      showSnackBarWithText(
+      showSnackBarWithTextWithDuration(
           context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textSuccessfulUpload);
 
       popAllAndNavigateToMockScreen(context);
