@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 
 class SelectablePhotoWrapper {
-  XFile photo;
+  late XFile photo;
   bool isSelected = true;
 
   SelectablePhotoWrapper(this.photo);

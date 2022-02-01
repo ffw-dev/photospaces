@@ -46,7 +46,24 @@ class AuthenticationService {
     });
   }
 
+  Future<bool> logout() async {
+    store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.checking));
+
+    if(store.state.photosState.photos.isNotEmpty) {
+      throw UnusedPhotosException;
+    }
+
+    store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.unauthenticated));
+    DeviceStorageService.delete(SecureCookieService.key);
+
+    return true;
+  }
+
   void replaceCookie(SecureCookie cookieFromLoginResponse) {
     DeviceStorageService.save(SecureCookieService.key, cookieFromLoginResponse);
   }
+}
+
+class UnusedPhotosException implements Exception {
+  String message = "App state contains photos";
 }

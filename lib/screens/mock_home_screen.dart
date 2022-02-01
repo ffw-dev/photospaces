@@ -1,6 +1,11 @@
 import 'package:dev_eza_api/main.dart';
+import 'package:ffw_photospaces/redux/actions/authentication_actions/set_authenticated_state_action.dart';
+import 'package:ffw_photospaces/redux/state_parts/login_state.dart';
 import 'package:ffw_photospaces/screens/camera_screen.dart';
+import 'package:ffw_photospaces/services/authentication_service.dart';
 import 'package:flutter/material.dart';
+
+import '../main.dart';
 
 class MockHomeScreen extends StatefulWidget {
   const MockHomeScreen({Key? key}) : super(key: key);
