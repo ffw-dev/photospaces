@@ -59,6 +59,12 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
 
   CameraController? _cameraController = null;
 
+   int _currentPointers = 0;
+   double _currentScale = 1.0;
+   double _baseScale = 1.0;
+   double _maxZoomLevel = 1.0;
+
+
   @override
   void initState() {
     WidgetsBinding.instance!.addObserver(this);
@@ -109,6 +115,7 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
         return;
       }
 
+      await _cameraController!.getMaxZoomLevel().then((value) => _maxZoomLevel = value);
       await _cameraController!.lockCaptureOrientation();
 
       setState(() => _isCamerasReady = true);
@@ -133,15 +140,19 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     );
   }
 
-  GestureDetector buildCameraView(BuildContext context) {
-    return GestureDetector(
-      child: InteractiveViewer(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.7, minWidth: MediaQuery.of(context).size.width),
-          child: AspectRatio(
-              aspectRatio: 1 / _cameraController!.value.aspectRatio, child: CameraPreview(_cameraController!)),
-        ),
+  Listener buildCameraView(BuildContext context) {
+    return Listener(
+      onPointerDown: (_) => _currentPointers++,
+      onPointerUp: (_) => _currentPointers--,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.7, minWidth: MediaQuery.of(context).size.width),
+        child: AspectRatio(
+            aspectRatio: 1 / _cameraController!.value.aspectRatio, child: CameraPreview(_cameraController!, child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onScaleStart: _handleScaleStart,
+          onScaleUpdate: _handleScaleUpdate,
+        ),)),
       ),
     );
   }
@@ -183,6 +194,25 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     } catch (e) {
       showSnackBarWithTextWithDuration(context, e.toString());
     }
+  }
+
+  Future<void> _handleScaleUpdate(ScaleUpdateDetails details) async {
+    if (_cameraController == null || _currentPointers != 2) {
+      return;
+    }
+
+    _currentScale = (_baseScale * details.scale)
+        .clamp(await _cameraController!.getMinZoomLevel(), await _cameraController!.getMaxZoomLevel());
+
+    if(_currentScale > 12) { //TODO: This is temporary fix, because iphone 13 has maxZoom of 127 and camera crashes when above 20 or something is used
+      _currentScale = 12;
+    }
+
+    await _cameraController!.setZoomLevel(_currentScale);
+  }
+
+  void _handleScaleStart(ScaleStartDetails details) {
+    _baseScale = _currentScale;
   }
 }
 
