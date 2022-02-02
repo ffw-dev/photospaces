@@ -7,8 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 
 class ImageCompressionService {
-  final int MIN_WIDTH = 920;
-  final int MIN_HEIGHT = 280;
   final int QUALITY = 30;
 
   Future<XFile> compressImage(XFile image) async {
