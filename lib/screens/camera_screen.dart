@@ -178,11 +178,6 @@ class _CameraScreenState extends State<CameraScreen> with WidgetsBindingObserver
     );
   }
 
-  void zoomHandler(details) async => await _cameraController!.getMaxZoomLevel() <= details.scale
-      ? null
-      : await _cameraController!.setZoomLevel(
-          details.scale.clamp(await _cameraController!.getMinZoomLevel(), await _cameraController!.getMaxZoomLevel()));
-
   void handleTakeAPicture(BuildContext context) async {
     if (_cameraController == null || _cameraController!.value.isTakingPicture) {
       return;
