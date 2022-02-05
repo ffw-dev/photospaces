@@ -1,10 +1,12 @@
 import 'package:async_redux/async_redux.dart';
-import 'package:camera/camera.dart';
 import 'package:ffw_photospaces/data_transfer_objects/selectable_photo_wrapper.dart';
+import 'package:ffw_photospaces/exceptions/logic_exception.dart';
+import 'package:ffw_photospaces/extensions/future_extension.dart';
 import 'package:ffw_photospaces/mixins/ez_asset_mixin.dart';
 import 'package:ffw_photospaces/mixins/snackbars_mixin.dart';
 import 'package:ffw_photospaces/redux/actions/photos_actions/replace_photos_action.dart';
 import 'package:ffw_photospaces/redux/app_state.dart';
+import 'package:ffw_photospaces/screens/login_screen.dart';
 import 'package:ffw_photospaces/services/authentication_service.dart';
 import 'package:ffw_photospaces/services/current_locales_service.dart';
 import 'package:ffw_photospaces/services/image_compression_service.dart';
@@ -95,8 +97,17 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
           IconButton(
               onPressed: () async => handleUploadAndShowSnackBars(context), icon: const Icon(Icons.check_circle)),
           IconButton(
-            icon: const Icon(Icons.logout, color: Colors.white, size: 24,),
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.white,
+              size: 24,
+            ),
             onPressed: () async {
+              if(!isSelectionEmpty) {
+                throw LogicException('App still contains unused photos');
+              }
+              await AuthenticationService().logout();
+              popAllAndNavigateToLoginScreen(context);
             },
           )
         ],
@@ -107,47 +118,37 @@ class PreviewAppBar extends StatelessWidget with SnackBarsMixin, EzAssetMixin im
     Navigator.pushNamedAndRemoveUntil(context, '/mockHomeScreen', (route) => false);
   }
 
+  void popAllAndNavigateToLoginScreen(BuildContext context) {
+    Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
+  }
+
   Future<void> handleUploadAndShowSnackBars(BuildContext context) async {
     if (isSelectionEmpty) {
-      showSnackBarWithTextWithDuration(context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textNoPhotosSelected);
-      return;
+      throw LogicException('Empty selection');
     }
 
     if (assetDescription.isEmpty) {
-      showSnackBarWithTextWithDuration(
-          context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textDescriptionMissing);
+      throw LogicException('Add description');
     } else {
-      List<SelectablePhotoWrapper> compressedImages = [];
-      try {
-        for (var element in photos) {
-          compressedImages.add(SelectablePhotoWrapper(await ImageCompressionService().compressImage(element.photo)));
-        }
-      } on FileCompressionFailedException catch(fileCompressionFailedException) {
-        showSnackBarWithTextWithDuration(
-            context, fileCompressionFailedException.message  + "Try again later or contact fastforward", milliseconds: 2000);
-        return;
-      } catch(_) {
-        showSnackBarWithTextWithDuration(
-            context, _.toString() + "Try again later or contact fastforward", milliseconds: 2000);
-        return;
-      }
+      showSnackBarPersistWithWidget(
+          context,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading),
+              const CircularProgressIndicator()
+            ],
+          ));
 
-      showSnackBarPersistWithWidget(context, Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,children: [Text(CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textUploading), const CircularProgressIndicator()],));
+      var compressedImages = await ImageCompressionService().compressImages(photos.map((e) => e.photo).toList());
 
-      try {
-        await createAssetAndUploadPhotos(compressedImages, assetDescription);
-      } catch (e) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-        showSnackBarWithTextWithDuration(context, CurrentLocalesService.errors.textUploadFailed, milliseconds: 2000);
-        return;
-      } finally {
+      createAssetAndUploadPhotos(compressedImages, assetDescription).onSuccess((_) {
         ScaffoldMessenger.of(context).clearSnackBars();
-      }
-
-      showSnackBarWithTextWithDuration(
-          context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textSuccessfulUpload, milliseconds: 2000);
-
-      popAllAndNavigateToMockScreen(context);
+        showSnackBarWithTextWithDuration(
+            context, CurrentLocalesService.screenPhotosPreview.componentPreviewAppBar.textSuccessfulUpload,
+            milliseconds: 2000);
+        popAllAndNavigateToMockScreen(context);
+      });
     }
   }
 }

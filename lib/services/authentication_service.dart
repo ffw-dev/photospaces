@@ -1,6 +1,9 @@
+import 'package:dev_eza_api/base_http_service.dart';
 import 'package:dev_eza_api/endpoints/authentication_endpoints.dart';
 import 'package:dev_eza_api/main.dart';
+import 'package:ffw_photospaces/exceptions/logic_exception.dart';
 import 'package:ffw_photospaces/main.dart';
+import 'package:ffw_photospaces/redux/actions/authentication_actions/reset_state_action.dart';
 import 'package:ffw_photospaces/redux/actions/authentication_actions/set_authenticated_state_action.dart';
 import 'package:ffw_photospaces/redux/state_parts/login_state.dart';
 import 'package:ffw_photospaces/services/secure_cookie_service.dart';
@@ -12,6 +15,8 @@ class AuthenticationService {
   final SecureCookieService _secureCookieService = SecureCookieService();
 
   Future<bool> login(String email, String password) async {
+    store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.checking));
+
     var response = await _authenticationEndpoints.emailPasswordPost(email, password);
     var success = response.error.fullName == null ? true : false;
 
@@ -24,6 +29,8 @@ class AuthenticationService {
   }
 
   Future<bool> loginByCookie() {
+    store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.checking));
+
     return DeviceStorageService.read<SecureCookie>(SecureCookieService.key, SecureCookie.fromJson).then((cookieFromDevice) {
       if (cookieFromDevice == null) {
         return false;
@@ -49,12 +56,11 @@ class AuthenticationService {
   Future<bool> logout() async {
     store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.checking));
 
-    if(store.state.photosState.photos.isNotEmpty) {
-      throw UnusedPhotosException;
-    }
-
+    await DeviceStorageService.delete(SecureCookieService.key);
     store.dispatch(SetAuthenticatedStateAction(AuthenticatedState.unauthenticated));
-    DeviceStorageService.delete(SecureCookieService.key);
+    DevEzaApi.removeSession();
+    await store.dispatch(ResetStateAction());
+    await DevEzaApi.sessionEndpoints.createSessionGet();
 
     return true;
   }
@@ -62,8 +68,4 @@ class AuthenticationService {
   void replaceCookie(SecureCookie cookieFromLoginResponse) {
     DeviceStorageService.save(SecureCookieService.key, cookieFromLoginResponse);
   }
-}
-
-class UnusedPhotosException implements Exception {
-  String message = "App state contains photos";
 }

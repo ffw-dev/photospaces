@@ -29,8 +29,6 @@ class ImageCompressionService {
           outPath,
           quality: QUALITY
       );
-    } on MissingPluginException catch(_) {
-      rethrow;
     }
 
     if(result == null) {
@@ -40,8 +38,17 @@ class ImageCompressionService {
     return XFile(result.path);
   }
 
+  Future<List<XFile>> compressImages(List<XFile> images) async {
+    List<XFile> compressedImages = [];
 
-}
+    for (var element in images) {
+      compressedImages.add(await compressImage(element));
+    }
+
+    return compressedImages;
+  }
+
+  }
 
 class FileCompressionFailedException implements Exception {
   final String message;
